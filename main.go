@@ -20,14 +20,24 @@ func main() {
 	var (
 		db             *gorm.DB                  = config.SetUpDatabaseConnection()
 		jwtService     services.JWTService       = services.NewJWTService()
+		
+		// Repo
 		userRepository repository.UserRepository = repository.NewUserRepository(db)
+		fileRepository repository.FileRepository = repository.NewFileRepository(db)
+
+		// Service
 		userService    services.UserService      = services.NewUserService(userRepository)
+		fileService    services.FileService      = services.NewFileService(fileRepository)
+		
+		// Controller
 		userController controller.UserController = controller.NewUserController(userService, jwtService)
+		fileController controller.FileController = controller.NewFileController(fileService, jwtService)
 	)
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	routes.User(server, userController, jwtService)
+	routes.File(server, fileController, jwtService)
 
 	if err := migrations.Seeder(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)	
