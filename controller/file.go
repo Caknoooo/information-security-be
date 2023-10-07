@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/services"
@@ -12,6 +13,8 @@ import (
 type (
 	FileController interface {
 		UploadFile(ctx *gin.Context)
+		GetAllFileByUser(ctx *gin.Context)
+		GetFile(ctx *gin.Context)
 	}
 
 	fileController struct {
@@ -52,4 +55,35 @@ func (c *fileController) UploadFile(ctx *gin.Context) {
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPLOAD_FILE, result)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *fileController) GetAllFileByUser(ctx *gin.Context) {
+	userId := ctx.MustGet("user_id").(string)
+
+	result, err := c.fileService.GetAllFileByUser(ctx.Request.Context(), userId)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_ALL_FILE, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_ALL_FILE, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *fileController) GetFile(ctx *gin.Context) {
+	userId := ctx.Param("user_id")
+	dirFile := ctx.Param("dir")
+	fileId := ctx.Param("file_id")
+
+	filePath := utils.PATH + "/" + userId + "/" + dirFile + "/" + fileId
+
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_FILE, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	
+	ctx.File(filePath)
 }
