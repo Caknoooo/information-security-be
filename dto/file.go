@@ -13,12 +13,14 @@ const (
 
 type (
 	UploadFileRequest struct {
-		File *multipart.FileHeader `form:"file" binding:"required"`
+		File     *multipart.FileHeader `form:"file" binding:"required"`
+		FileType string                `form:"file_type"`
 	}
 
 	UploadFileResponse struct {
 		Path             string `json:"path"`
 		Filename         string `json:"file_name"`
+		FileType         string `json:"file_type"`
 		Encryption       string `json:"encryption"`
 		AES_KEY          string `json:"aes_key,omitempty"`
 		AES_PLAIN_TEXT   string `json:"aes_plain_text,omitempty"`
