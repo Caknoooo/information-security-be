@@ -38,11 +38,13 @@ const (
 
 type userService struct {
 	userRepo repository.UserRepository
+	fileRepo repository.FileRepository
 }
 
-func NewUserService(ur repository.UserRepository) UserService {
+func NewUserService(ur repository.UserRepository, fr repository.FileRepository) UserService {
 	return &userService{
 		userRepo: ur,
+		fileRepo: fr,
 	}
 }
 
@@ -254,6 +256,23 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		return dto.UserResponse{}, dto.ErrUserNotFound
 	}
 
+	fileUser, err := s.fileRepo.GetAllFileByUserId(ctx, nil, user.ID.String())
+	if err != nil {
+		return dto.UserResponse{}, dto.ErrGetAllFileByUserId
+	}
+
+	var files []dto.UploadFileResponse
+	for _, file := range fileUser {
+		data := dto.UploadFileResponse{
+			Path:       file.Path,
+			Filename:   file.FileName,
+			FileType:   file.FileType,
+			Encryption: file.Encryption,
+		}
+
+		files = append(files, data)
+	}
+
 	return dto.UserResponse{
 		ID:         user.ID.String(),
 		Name:       user.Name,
@@ -261,8 +280,9 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		Role:       user.Role,
 		Email:      user.Email,
 		IsVerified: user.IsVerified,
+		Files:      files,
 		CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
-	}, nil	
+	}, nil
 }
 
 func (s *userService) UpdateStatusIsVerified(ctx context.Context, req dto.UpdateStatusIsVerifiedRequest, adminId string) (dto.UserResponse, error) {
