@@ -18,7 +18,7 @@ import (
 
 type UserService interface {
 	RegisterUser(ctx context.Context, req dto.UserCreateRequest) (dto.UserResponse, error)
-	GetAllUser(ctx context.Context) ([]dto.UserResponse, error)
+	GetAllUser(ctx context.Context, adminId string) ([]dto.UserResponse, error)
 	GetUserById(ctx context.Context, userId string) (dto.UserResponse, error)
 	GetUserByEmail(ctx context.Context, email string) (dto.UserResponse, error)
 	UpdateStatusIsVerified(ctx context.Context, req dto.UpdateStatusIsVerifiedRequest, adminId string) (dto.UserResponse, error)
@@ -101,23 +101,23 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	}
 
 	data := struct {
-		Email  string
-		Verify string
-		AES_KEY string
+		Email          string
+		Verify         string
+		AES_KEY        string
 		AES_PLAIN_TEXT string
-		AES_BLOCK string
-		AES_GCM string
-		AES_NONCE string
-		AES_RESULT string
+		AES_BLOCK      string
+		AES_GCM        string
+		AES_NONCE      string
+		AES_RESULT     string
 	}{
-		Email:  receiverEmail,
-		Verify: verifyLink,
-		AES_KEY: datas["key"].(string),
+		Email:          receiverEmail,
+		Verify:         verifyLink,
+		AES_KEY:        datas["key"].(string),
 		AES_PLAIN_TEXT: datas["plaintext"].(string),
-		AES_BLOCK: datas["block"].(string),
-		AES_GCM: datas["aes-gcm"].(string),
-		AES_NONCE: datas["nonce"].(string),
-		AES_RESULT: token,
+		AES_BLOCK:      datas["block"].(string),
+		AES_GCM:        datas["aes-gcm"].(string),
+		AES_NONCE:      datas["nonce"].(string),
+		AES_RESULT:     token,
 	}
 
 	tmpl, err := template.New("custom").Parse(string(readHtml))
@@ -207,7 +207,16 @@ func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailReques
 	}, nil
 }
 
-func (s *userService) GetAllUser(ctx context.Context) ([]dto.UserResponse, error) {
+func (s *userService) GetAllUser(ctx context.Context, adminId string) ([]dto.UserResponse, error) {
+	admin, err := s.userRepo.GetUserById(ctx, adminId)
+	if err != nil {
+		return nil, dto.ErrUserNotFound
+	}
+
+	if admin.Role != constants.ENUM_ROLE_ADMIN {
+		return nil, dto.ErrUserNotAdmin
+	}
+
 	users, err := s.userRepo.GetAllUser(ctx)
 	if err != nil {
 		return nil, dto.ErrGetAllUser
@@ -222,6 +231,7 @@ func (s *userService) GetAllUser(ctx context.Context) ([]dto.UserResponse, error
 			Role:       user.Role,
 			Email:      user.Email,
 			IsVerified: user.IsVerified,
+			CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 		})
 	}
 

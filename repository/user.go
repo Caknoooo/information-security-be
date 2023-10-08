@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/Caknoooo/golang-clean_template/constants"
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"gorm.io/gorm"
 )
@@ -36,7 +37,7 @@ func (r *userRepository) RegisterUser(ctx context.Context, user entities.User) (
 
 func (r *userRepository) GetAllUser(ctx context.Context) ([]entities.User, error){
 	var user []entities.User
-	if err := r.db.Find(&user).Error; err != nil {
+	if err := r.db.Where("role = ?", constants.ENUM_ROLE_USER).Find(&user).Error; err != nil {
 		return nil, err
 	}
 	return user, nil

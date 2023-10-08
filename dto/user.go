@@ -64,6 +64,7 @@ type (
 		Role       string `json:"role"`
 		Email      string `json:"email"`
 		IsVerified bool   `json:"is_verified"`
+		CreatedAt  string `json:"created_at,omitempty"`
 	}
 
 	UserUpdateRequest struct {
