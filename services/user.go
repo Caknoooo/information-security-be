@@ -281,6 +281,7 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		Email:      user.Email,
 		IsVerified: user.IsVerified,
 		Files:      files,
+		Work:       user.Work,
 		CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 	}, nil
 }
@@ -374,6 +375,7 @@ func (s *userService) UpdateUser(ctx context.Context, req dto.UserUpdateRequest,
 		ID:         user.ID,
 		Name:       req.Name,
 		TelpNumber: req.TelpNumber,
+		Work:       req.Work,
 		Role:       user.Role,
 		Email:      req.Email,
 		Password:   req.Password,
@@ -391,6 +393,7 @@ func (s *userService) UpdateUser(ctx context.Context, req dto.UserUpdateRequest,
 		Role:       userUpdate.Role,
 		Email:      userUpdate.Email,
 		IsVerified: userUpdate.IsVerified,
+		Work:       userUpdate.Work,
 	}, nil
 }
 

@@ -65,6 +65,7 @@ type (
 		Role       string               `json:"role"`
 		Email      string               `json:"email"`
 		IsVerified bool                 `json:"is_verified"`
+		Work       string               `json:"work,omitempty"`
 		Files      []UploadFileResponse `json:"files,omitempty"`
 		CreatedAt  string               `json:"created_at,omitempty"`
 	}
@@ -72,6 +73,7 @@ type (
 	UserUpdateRequest struct {
 		Name       string `json:"name" form:"name"`
 		TelpNumber string `json:"telp_number" form:"telp_number"`
+		Work       string `json:"work" form:"work"`
 		Email      string `json:"email" form:"email"`
 		Password   string `json:"password" form:"password"`
 	}
@@ -82,6 +84,7 @@ type (
 		TelpNumber string `json:"telp_number,omitempty"`
 		Role       string `json:"role,omitempty"`
 		Email      string `json:"email,omitempty"`
+		Work       string `json:"work,omitempty"`
 		IsVerified bool   `json:"is_verified,omitempty"`
 	}
 
