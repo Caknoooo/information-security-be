@@ -13,12 +13,13 @@ import (
 const (
 	// todo
 	KEY = "8e71bbce7451ba2835de5aea73e4f3f96821455240823d2fd8174975b8321bfc!"
+	FILE_KEY = "8e71bbce7451ba2835de5aea73e4f3f9!"
 )
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes
 
-func AESEncrypt(stringToEncrypt string) (encryptedString string, data map[string]interface{}, err error) {
-	key, _ := hex.DecodeString(KEY)
+func AESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, data map[string]interface{}, err error) {
+	key, _ := hex.DecodeString(KEYS)
 	plaintext := []byte(stringToEncrypt)
 
 	block, err := aes.NewCipher(key)
@@ -49,7 +50,7 @@ func AESEncrypt(stringToEncrypt string) (encryptedString string, data map[string
 	return fmt.Sprintf("%x", ciphertext), data, err
 }
 
-func AESDecrypt(encryptedString string) (decryptedString string, err error) {
+func AESDecrypt(encryptedString string, KEYS string) (decryptedString string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			decryptedString = ""
@@ -57,7 +58,7 @@ func AESDecrypt(encryptedString string) (decryptedString string, err error) {
 		}
 	}()
 
-	key, _ := hex.DecodeString(KEY)
+	key, _ := hex.DecodeString(KEYS)
 	enc, _ := hex.DecodeString(encryptedString)
 
 	//Create a new Cipher Block from the key

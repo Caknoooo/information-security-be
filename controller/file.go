@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/services"
@@ -31,13 +32,7 @@ func NewFileController(fileService services.FileService, jwtService services.JWT
 }
 
 func (c *fileController) UploadFile(ctx *gin.Context) {
-	token := ctx.MustGet("token").(string)
-	userId, err := c.jwtService.GetUserIDByToken(token)
-	if err != nil {
-		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_USER_TOKEN, dto.MESSAGE_FAILED_TOKEN_NOT_VALID, nil)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
+	userId := ctx.MustGet("user_id").(string)
 
 	var req dto.UploadFileRequest
 	if err := ctx.ShouldBind(&req); err != nil {
@@ -72,18 +67,24 @@ func (c *fileController) GetAllFileByUser(ctx *gin.Context) {
 }
 
 func (c *fileController) GetFile(ctx *gin.Context) {
-	userId := ctx.Param("user_id")
-	dirFile := ctx.Param("dir")
-	fileId := ctx.Param("file_id")
+	filename := ctx.Param("filename")
 
-	filePath := utils.PATH + "/" + userId + "/" + dirFile + "/" + fileId
+	fileDecrypt, err := c.fileService.DecryptFileData(ctx.Request.Context(), filename)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_FILE, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
 
-	_, err := os.Stat(filePath)
+	data := strings.Split(fileDecrypt, "/")
+	filePath := utils.PATH + "/" + data[0] + "/" + data[1] + "/" + data[2]
+
+	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_FILE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
-	
+
 	ctx.File(filePath)
 }

@@ -88,7 +88,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	expired := time.Now().Add(time.Hour * 24).Format("2006-01-02 15:04:05")
 	plainText := receiverEmail + "_" + expired
-	token, datas, err := utils.AESEncrypt(plainText)
+	token, datas, err := utils.AESEncrypt(plainText, utils.KEY)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (s *userService) SendVerificationEmail(ctx context.Context, req dto.SendVer
 }
 
 func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailRequest) (dto.VerifyEmailResponse, error) {
-	decryptedToken, err := utils.AESDecrypt(req.Token)
+	decryptedToken, err := utils.AESDecrypt(req.Token, utils.KEY)
 	if err != nil {
 		return dto.VerifyEmailResponse{}, dto.ErrTokenInvalid
 	}
