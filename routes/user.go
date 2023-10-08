@@ -21,6 +21,7 @@ func User(route *gin.Engine, userController controller.UserController, jwtServic
 
 		// Admin
 		routes.GET("/admin", middleware.Authenticate(jwtService), userController.GetAllUser)
+		routes.GET("/admin/:user_id", middleware.Authenticate(jwtService), userController.GetUserByAdmin)
 		routes.PATCH("/admin/verify", middleware.Authenticate(jwtService), userController.UpdateStatusIsVerified)
 	}
 }

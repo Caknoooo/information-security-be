@@ -21,6 +21,7 @@ type UserService interface {
 	GetAllUser(ctx context.Context, adminId string) ([]dto.UserResponse, error)
 	GetUserById(ctx context.Context, userId string) (dto.UserResponse, error)
 	GetUserByEmail(ctx context.Context, email string) (dto.UserResponse, error)
+	GetUserByAdmin(ctx context.Context, adminId string, userId string) (dto.UserResponse, error)
 	UpdateStatusIsVerified(ctx context.Context, req dto.UpdateStatusIsVerifiedRequest, adminId string) (dto.UserResponse, error)
 	SendVerificationEmail(ctx context.Context, req dto.SendVerificationEmailRequest) error
 	VerifyEmail(ctx context.Context, req dto.VerifyEmailRequest) (dto.VerifyEmailResponse, error)
@@ -236,6 +237,32 @@ func (s *userService) GetAllUser(ctx context.Context, adminId string) ([]dto.Use
 	}
 
 	return userResponse, nil
+}
+
+func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId string) (dto.UserResponse, error) {
+	admin, err := s.userRepo.GetUserById(ctx, adminId)
+	if err != nil {
+		return dto.UserResponse{}, dto.ErrUserNotFound
+	}
+
+	if admin.Role != constants.ENUM_ROLE_ADMIN {
+		return dto.UserResponse{}, dto.ErrUserNotAdmin
+	}
+
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return dto.UserResponse{}, dto.ErrUserNotFound
+	}
+
+	return dto.UserResponse{
+		ID:         user.ID.String(),
+		Name:       user.Name,
+		TelpNumber: user.TelpNumber,
+		Role:       user.Role,
+		Email:      user.Email,
+		IsVerified: user.IsVerified,
+		CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
+	}, nil	
 }
 
 func (s *userService) UpdateStatusIsVerified(ctx context.Context, req dto.UpdateStatusIsVerifiedRequest, adminId string) (dto.UserResponse, error) {
