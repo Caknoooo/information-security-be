@@ -17,7 +17,14 @@ type (
 	}
 
 	UploadFileResponse struct {
-		Url      string `json:"url"`
-		Filename string `json:"file_name"`
+		Url              string `json:"url"`
+		Filename         string `json:"file_name"`
+		Encryption       string `json:"encryption"`
+		AES_KEY          string `json:"aes_key"`
+		AES_PLAIN_TEXT   string `json:"aes_plain_text"`
+		AES_BLOCK_CHIPER string `json:"aes_block_chiper"`
+		AES_GCM          string `json:"aes_gcm"`
+		AES_NONCE        string `json:"aes_nonce"`
+		AES_RESULT       string `json:"aes_result"`
 	}
 )

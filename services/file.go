@@ -15,6 +15,7 @@ type (
 	FileService interface {
 		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error)
 		GetAllFileByUser(ctx context.Context, userId string) ([]entities.File, error)
+		DecryptFileData(ctx context.Context, encryption string) (string, error)
 	}
 
 	fileService struct {
@@ -35,8 +36,14 @@ const (
 
 func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error) {
 	fileId := uuid.New()
+
 	fileName := fmt.Sprintf("%s/files/%s", userId, fileId)
 	if err := utils.UploadFileSuccess(req.File, fileName); err != nil {
+		return dto.UploadFileResponse{}, err
+	}
+
+	encryption, data, err := utils.AESEncrypt(fileName, utils.FILE_KEY)
+	if err != nil {
 		return dto.UploadFileResponse{}, err
 	}
 
@@ -47,14 +54,21 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		UserId:   uuid.MustParse(userId),
 	}
 
-	_, err := s.fileRepo.Create(ctx, nil, uploadFile)
+	_, err = s.fileRepo.Create(ctx, nil, uploadFile)
 	if err != nil {
 		return dto.UploadFileResponse{}, err
 	}
 
 	return dto.UploadFileResponse{
-		Url:      fileName,
-		Filename: req.File.Filename,
+		Url:              fileName,
+		Filename:         req.File.Filename,
+		Encryption:       encryption,
+		AES_KEY:          data["key"].(string),
+		AES_PLAIN_TEXT:   data["plaintext"].(string),
+		AES_BLOCK_CHIPER: data["block"].(string),
+		AES_GCM:          data["aes-gcm"].(string),
+		AES_NONCE:        data["nonce"].(string),
+		AES_RESULT:       encryption,
 	}, nil
 }
 
@@ -62,6 +76,15 @@ func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]en
 	result, err := s.fileRepo.GetAllFileByUserId(ctx, nil, userId)
 	if err != nil {
 		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *fileService) DecryptFileData(ctx context.Context, encryption string) (string, error) {
+	result, err := utils.AESDecrypt(encryption, utils.FILE_KEY)
+	if err != nil {
+		return "", err
 	}
 
 	return result, nil
