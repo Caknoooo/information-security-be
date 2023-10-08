@@ -11,6 +11,7 @@ type (
 	FileRepository interface {
 		Create(ctx context.Context, tx *gorm.DB, file entities.File) (entities.File, error)
 		GetAllFile(ctx context.Context, tx *gorm.DB) ([]entities.File, error)
+		GetAllFileByUserId(ctx context.Context, tx *gorm.DB, userId string) ([]entities.File, error)
 		GetFileById(ctx context.Context, tx *gorm.DB, fileId string) (entities.File, error)
 	}
 
@@ -43,6 +44,18 @@ func (r *fileRepository) GetAllFile(ctx context.Context, tx *gorm.DB) ([]entitie
 
 	var file []entities.File
 	if err := tx.Find(&file).Error; err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+func (r *fileRepository) GetAllFileByUserId(ctx context.Context, tx *gorm.DB, userId string) ([]entities.File, error) {
+	if tx == nil {
+		tx = r.db
+	}
+
+	var file []entities.File
+	if err := tx.Where("user_id = ?", userId).Find(&file).Error; err != nil {
 		return nil, err
 	}
 	return file, nil

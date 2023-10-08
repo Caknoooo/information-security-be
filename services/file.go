@@ -3,19 +3,18 @@ package services
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/Caknoooo/golang-clean_template/repository"
+	"github.com/Caknoooo/golang-clean_template/utils"
 	"github.com/google/uuid"
 )
 
 type (
 	FileService interface {
 		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error)
+		GetAllFileByUser(ctx context.Context, userId string) ([]entities.File, error)
 	}
 
 	fileService struct {
@@ -36,18 +35,10 @@ const (
 
 func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error) {
 	fileId := uuid.New()
-	fileName := fmt.Sprintf("%s/%s/%s/%s", PATH, FILES, userId, fileId)
-
-	// Ensure the parent directory exists
-	if err := os.MkdirAll(filepath.Join(PATH, FILES, userId), 0666); err != nil {
+	fileName := fmt.Sprintf("%s/files/%s", userId, fileId)
+	if err := utils.UploadFileSuccess(req.File, fileName); err != nil {
 		return dto.UploadFileResponse{}, err
 	}
-
-	out, err := os.Create(fileName)
-	if err != nil {
-		return dto.UploadFileResponse{}, err
-	}
-	defer out.Close()
 
 	uploadFile := entities.File{
 		ID:       fileId,
@@ -56,18 +47,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		UserId:   uuid.MustParse(userId),
 	}
 
-	_, err = s.fileRepo.Create(ctx, nil, uploadFile)
-	if err != nil {
-		return dto.UploadFileResponse{}, err
-	}
-
-	uploadedFile, err := req.File.Open()
-	if err != nil {
-		return dto.UploadFileResponse{}, err
-	}
-	defer uploadedFile.Close()
-
-	_, err = io.Copy(out, uploadedFile)
+	_, err := s.fileRepo.Create(ctx, nil, uploadFile)
 	if err != nil {
 		return dto.UploadFileResponse{}, err
 	}
@@ -78,10 +58,11 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	}, nil
 }
 
-func (s *fileService) GetAllFile(ctx context.Context) ([]entities.File, error) {
-	file, err := s.fileRepo.GetAllFile(ctx, nil)
+func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]entities.File, error) {
+	result, err := s.fileRepo.GetAllFileByUserId(ctx, nil, userId)
 	if err != nil {
 		return nil, err
 	}
-	return file, nil
+
+	return result, nil
 }
