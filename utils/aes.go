@@ -17,34 +17,36 @@ const (
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes
 
-func AESEncrypt(stringToEncrypt string) (encryptedString string, err error) {
-	//Since the key is in string, we need to convert decode it to bytes
+func AESEncrypt(stringToEncrypt string) (encryptedString string, data map[string]interface{}, err error) {
 	key, _ := hex.DecodeString(KEY)
 	plaintext := []byte(stringToEncrypt)
 
-	//Create a new Cipher Block from the key
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	//Create a new GCM - https://en.wikipedia.org/wiki/Galois/Counter_Mode
-	//https://golang.org/pkg/crypto/cipher/#NewGCM
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	//Create a nonce. Nonce should be from GCM
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	//Encrypt the data using aesGCM.Seal
-	//Since we don't want to save the nonce somewhere else in this case, we add it as a prefix to the encrypted data. The first nonce argument in Seal is the prefix.
 	ciphertext := aesGCM.Seal(nonce, nonce, plaintext, nil)
-	return fmt.Sprintf("%x", ciphertext), nil
+
+	data = map[string]interface{}{
+		"key":       KEY,
+		"plaintext": string(plaintext),
+		"block":     fmt.Sprintf("%d", block.BlockSize()),
+    "aes-gcm":   fmt.Sprintf("%v", aesGCM), 
+		"nonce":     hex.EncodeToString(nonce),
+	}
+
+	return fmt.Sprintf("%x", ciphertext), data, err
 }
 
 func AESDecrypt(encryptedString string) (decryptedString string, err error) {
