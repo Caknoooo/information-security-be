@@ -88,7 +88,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	expired := time.Now().Add(time.Hour * 24).Format("2006-01-02 15:04:05")
 	plainText := receiverEmail + "_" + expired
-	token, err := utils.AESEncrypt(plainText)
+	token, datas, err := utils.AESEncrypt(plainText)
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +103,21 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	data := struct {
 		Email  string
 		Verify string
+		AES_KEY string
+		AES_PLAIN_TEXT string
+		AES_BLOCK string
+		AES_GCM string
+		AES_NONCE string
+		AES_RESULT string
 	}{
 		Email:  receiverEmail,
 		Verify: verifyLink,
+		AES_KEY: datas["key"].(string),
+		AES_PLAIN_TEXT: datas["plaintext"].(string),
+		AES_BLOCK: datas["block"].(string),
+		AES_GCM: datas["aes-gcm"].(string),
+		AES_NONCE: datas["nonce"].(string),
+		AES_RESULT: token,
 	}
 
 	tmpl, err := template.New("custom").Parse(string(readHtml))
@@ -119,7 +131,7 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	}
 
 	draftEmail := map[string]string{
-		"subject": "Cakno - Go Gin Template",
+		"subject": "Information Security F - Verification Email",
 		"body":    strMail.String(),
 	}
 

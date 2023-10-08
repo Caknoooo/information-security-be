@@ -33,6 +33,12 @@
       color: #007bff;
       text-decoration: none;
     }
+    .encryption-info {
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -45,6 +51,17 @@
     </div>
     <p>If you are unable to click the link above, please copy and paste the following URL into your web browser:</p>
     <p>{{ .Verify }}</p>
+
+    <!-- Informasi Enkripsi -->
+    <div class="encryption-info">
+      <h2>Encryption Details</h2>
+      <p>KEY: {{ .AES_KEY }}</p>
+      <p>Plain Text: {{ .AES_PLAIN_TEXT }}</p>
+      <p>Block Cipher: {{ .AES_BLOCK }} Block</p>
+      <p>AES-GCM: {{ .AES_GCM }}</p>
+      <p>Nonce From GCM: {{ .AES_NONCE }}</p>
+      <p>Result of AES: {{ .AES_RESULT }}</p>
+    </div>
   </div>
 </body>
 </html>
