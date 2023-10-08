@@ -13,6 +13,7 @@ import (
 type UserController interface {
 	Register(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
+	GetUserByAdmin(ctx *gin.Context)
 	Me(ctx *gin.Context)
 	SendVerificationEmail(ctx *gin.Context)
 	VerifyEmail(ctx *gin.Context)
@@ -57,6 +58,21 @@ func (c *userController) GetAllUser(ctx *gin.Context) {
 	adminId := ctx.MustGet("user_id").(string)
 
 	result, err := c.userService.GetAllUser(ctx.Request.Context(), adminId)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_USER, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_LIST_USER, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *userController) GetUserByAdmin(ctx *gin.Context) {
+	adminId := ctx.MustGet("user_id").(string)
+	userId := ctx.Param("user_id")
+
+	result, err := c.userService.GetUserByAdmin(ctx.Request.Context(), adminId, userId)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_USER, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
