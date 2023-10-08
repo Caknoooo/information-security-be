@@ -47,6 +47,7 @@ var (
 	ErrTokenInvalid           = errors.New("token invalid")
 	ErrTokenExpired           = errors.New("token expired")
 	ErrAccountAlreadyVerified = errors.New("account already verified")
+	ErrGetAllFileByUserId     = errors.New("failed to get all file by user id")
 )
 
 type (
@@ -58,13 +59,14 @@ type (
 	}
 
 	UserResponse struct {
-		ID         string `json:"id"`
-		Name       string `json:"name"`
-		TelpNumber string `json:"telp_number"`
-		Role       string `json:"role"`
-		Email      string `json:"email"`
-		IsVerified bool   `json:"is_verified"`
-		CreatedAt  string `json:"created_at,omitempty"`
+		ID         string               `json:"id"`
+		Name       string               `json:"name"`
+		TelpNumber string               `json:"telp_number"`
+		Role       string               `json:"role"`
+		Email      string               `json:"email"`
+		IsVerified bool                 `json:"is_verified"`
+		Files      []UploadFileResponse `json:"files,omitempty"`
+		CreatedAt  string               `json:"created_at,omitempty"`
 	}
 
 	UserUpdateRequest struct {
