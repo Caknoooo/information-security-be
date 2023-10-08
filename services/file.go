@@ -14,7 +14,7 @@ import (
 type (
 	FileService interface {
 		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error)
-		GetAllFileByUser(ctx context.Context, userId string) ([]entities.File, error)
+		GetAllFileByUser(ctx context.Context, userId string) ([]dto.UploadFileResponse, error)
 		DecryptFileData(ctx context.Context, encryption string) (string, error)
 	}
 
@@ -48,10 +48,11 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	}
 
 	uploadFile := entities.File{
-		ID:       fileId,
-		Url:      fileName,
-		FileName: req.File.Filename,
-		UserId:   uuid.MustParse(userId),
+		ID:         fileId,
+		Path:       fileName,
+		Encryption: encryption,
+		FileName:   req.File.Filename,
+		UserId:     uuid.MustParse(userId),
 	}
 
 	_, err = s.fileRepo.Create(ctx, nil, uploadFile)
@@ -60,7 +61,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	}
 
 	return dto.UploadFileResponse{
-		Url:              fileName,
+		Path:             fileName,
 		Filename:         req.File.Filename,
 		Encryption:       encryption,
 		AES_KEY:          data["key"].(string),
@@ -72,13 +73,22 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	}, nil
 }
 
-func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]entities.File, error) {
+func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]dto.UploadFileResponse, error) {
 	result, err := s.fileRepo.GetAllFileByUserId(ctx, nil, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	var files []dto.UploadFileResponse
+	for _, file := range result {
+		files = append(files, dto.UploadFileResponse{
+			Path:       file.Path,
+			Filename:   file.FileName,
+			Encryption: file.Encryption,
+		})
+	}
+
+	return files, nil
 }
 
 func (s *fileService) DecryptFileData(ctx context.Context, encryption string) (string, error) {

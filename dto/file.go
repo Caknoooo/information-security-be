@@ -17,14 +17,14 @@ type (
 	}
 
 	UploadFileResponse struct {
-		Url              string `json:"url"`
+		Path             string `json:"path"`
 		Filename         string `json:"file_name"`
 		Encryption       string `json:"encryption"`
-		AES_KEY          string `json:"aes_key"`
-		AES_PLAIN_TEXT   string `json:"aes_plain_text"`
-		AES_BLOCK_CHIPER string `json:"aes_block_chiper"`
-		AES_GCM          string `json:"aes_gcm"`
-		AES_NONCE        string `json:"aes_nonce"`
-		AES_RESULT       string `json:"aes_result"`
+		AES_KEY          string `json:"aes_key,omitempty"`
+		AES_PLAIN_TEXT   string `json:"aes_plain_text,omitempty"`
+		AES_BLOCK_CHIPER string `json:"aes_block_chiper,omitempty"`
+		AES_GCM          string `json:"aes_gcm,omitempty"`
+		AES_NONCE        string `json:"aes_nonce,omitempty"`
+		AES_RESULT       string `json:"aes_result,omitempty"`
 	}
 )
