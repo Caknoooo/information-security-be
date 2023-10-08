@@ -54,7 +54,9 @@ func (c *userController) Register(ctx *gin.Context) {
 }
 
 func (c *userController) GetAllUser(ctx *gin.Context) {
-	result, err := c.userService.GetAllUser(ctx.Request.Context())
+	adminId := ctx.MustGet("user_id").(string)
+
+	result, err := c.userService.GetAllUser(ctx.Request.Context(), adminId)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LIST_USER, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
