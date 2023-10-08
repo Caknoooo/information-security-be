@@ -8,6 +8,7 @@ type (
 		Path       string    `json:"path"`
 		FileName   string    `json:"file_name"`
 		Encryption string    `json:"encryption"`
+		FileType   string    `json:"file_type"`
 		UserId     uuid.UUID `json:"user_id"`
 		User       *User     `json:"user" gorm:"foreignKey:UserId"`
 	}

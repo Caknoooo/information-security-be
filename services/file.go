@@ -51,6 +51,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		ID:         fileId,
 		Path:       fileName,
 		Encryption: encryption,
+		FileType:   req.FileType,
 		FileName:   req.File.Filename,
 		UserId:     uuid.MustParse(userId),
 	}
@@ -63,6 +64,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	return dto.UploadFileResponse{
 		Path:             fileName,
 		Filename:         req.File.Filename,
+		FileType:         req.FileType,
 		Encryption:       encryption,
 		AES_KEY:          data["key"].(string),
 		AES_PLAIN_TEXT:   data["plaintext"].(string),
@@ -84,6 +86,7 @@ func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]dt
 		files = append(files, dto.UploadFileResponse{
 			Path:       file.Path,
 			Filename:   file.FileName,
+			FileType:   file.FileType,
 			Encryption: file.Encryption,
 		})
 	}
