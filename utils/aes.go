@@ -13,7 +13,9 @@ import (
 const (
 	// todo
 	KEY = "8e71bbce7451ba2835de5aea73e4f3f96821455240823d2fd8174975b8321bfc!"
-	FILE_KEY = "8e71bbce7451ba2835de5aea73e4f3f9!"
+	FILE_KEY_AES = "8e71bbce7451ba2835de5aea73e4f3f9!"
+	FILE_KEY_DES = "8e71bbce7451ba2835de5aea73e4f3f9!"
+	FILE_KEY_RC4 = "8e71bbce7451ba2835de5aea73e4f3f9!"
 )
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes
@@ -45,6 +47,7 @@ func AESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, da
 		"block":     fmt.Sprintf("%d", block.BlockSize()),
     "aes-gcm":   fmt.Sprintf("%v", aesGCM), 
 		"nonce":     hex.EncodeToString(nonce),
+		"mode":      "AES",
 	}
 
 	return fmt.Sprintf("%x", ciphertext), data, err

@@ -67,9 +67,10 @@ func (c *fileController) GetAllFileByUser(ctx *gin.Context) {
 }
 
 func (c *fileController) GetFile(ctx *gin.Context) {
+	mode := ctx.Query("mode")
 	filename := ctx.Param("filename")
 
-	fileDecrypt, err := c.fileService.DecryptFileData(ctx.Request.Context(), filename)
+	fileDecrypt, err := c.fileService.DecryptFileData(ctx.Request.Context(), filename, mode)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_FILE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)

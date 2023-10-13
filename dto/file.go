@@ -14,6 +14,7 @@ const (
 type (
 	UploadFileRequest struct {
 		File     *multipart.FileHeader `form:"file" binding:"required"`
+		Mode     string                `form:"mode" binding:"required"`
 		FileType string                `form:"file_type"`
 	}
 
@@ -26,6 +27,7 @@ type (
 		AES_PLAIN_TEXT   string `json:"aes_plain_text,omitempty"`
 		AES_BLOCK_CHIPER string `json:"aes_block_chiper,omitempty"`
 		AES_GCM          string `json:"aes_gcm,omitempty"`
+		AES_CIPHERTEXT   string `json:"aes_ciphertext,omitempty"`
 		AES_NONCE        string `json:"aes_nonce,omitempty"`
 		AES_RESULT       string `json:"aes_result,omitempty"`
 	}

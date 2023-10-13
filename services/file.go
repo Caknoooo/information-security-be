@@ -15,7 +15,7 @@ type (
 	FileService interface {
 		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error)
 		GetAllFileByUser(ctx context.Context, userId string) ([]dto.UploadFileResponse, error)
-		DecryptFileData(ctx context.Context, encryption string) (string, error)
+		DecryptFileData(ctx context.Context, encryption string, mode string) (string, error)
 	}
 
 	fileService struct {
@@ -42,9 +42,52 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		return dto.UploadFileResponse{}, err
 	}
 
-	encryption, data, err := utils.AESEncrypt(fileName, utils.FILE_KEY)
-	if err != nil {
-		return dto.UploadFileResponse{}, err
+	var encryption string
+	var data map[string]interface{}
+	var err error
+
+	if req.Mode == "DES" {
+		encryption, data, err = utils.DESEncrypt(fileName, utils.FILE_KEY_DES)
+		if err != nil {
+			return dto.UploadFileResponse{}, err
+		}
+	} else if req.Mode == "RC4" {
+		encryption, data, err = utils.RC4Encrypt(fileName, utils.FILE_KEY_RC4)
+		if err != nil {
+			return dto.UploadFileResponse{}, err
+		}
+	} else {
+		encryption, data, err = utils.AESEncrypt(fileName, utils.FILE_KEY_AES)
+		if err != nil {
+			return dto.UploadFileResponse{}, err
+		}
+
+		uploadFile := entities.File{
+			ID:         fileId,
+			Path:       fileName,
+			Encryption: encryption,
+			FileType:   req.FileType,
+			FileName:   req.File.Filename,
+			UserId:     uuid.MustParse(userId),
+		}
+
+		_, err = s.fileRepo.Create(ctx, nil, uploadFile)
+		if err != nil {
+			return dto.UploadFileResponse{}, err
+		}
+
+		return dto.UploadFileResponse{
+			Path:             fileName,
+			Filename:         req.File.Filename,
+			FileType:         req.FileType,
+			Encryption:       encryption,
+			AES_KEY:          data["key"].(string),
+			AES_PLAIN_TEXT:   data["plaintext"].(string),
+			AES_BLOCK_CHIPER: data["block"].(string),
+			AES_GCM:          data["aes-gcm"].(string),
+			AES_NONCE:        data["nonce"].(string),
+			AES_RESULT:       encryption,
+		}, nil
 	}
 
 	uploadFile := entities.File{
@@ -69,8 +112,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		AES_KEY:          data["key"].(string),
 		AES_PLAIN_TEXT:   data["plaintext"].(string),
 		AES_BLOCK_CHIPER: data["block"].(string),
-		AES_GCM:          data["aes-gcm"].(string),
-		AES_NONCE:        data["nonce"].(string),
+		AES_CIPHERTEXT:   data["ciphertext"].(string),
 		AES_RESULT:       encryption,
 	}, nil
 }
@@ -94,11 +136,26 @@ func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]dt
 	return files, nil
 }
 
-func (s *fileService) DecryptFileData(ctx context.Context, encryption string) (string, error) {
-	result, err := utils.AESDecrypt(encryption, utils.FILE_KEY)
-	if err != nil {
-		return "", err
+func (s *fileService) DecryptFileData(ctx context.Context, encryption string, mode string) (string, error) {
+	var decrypted string
+	var err error
+
+	if mode == "DES" {
+		decrypted, err = utils.DESDecrypt(encryption, utils.FILE_KEY_DES)
+		if err != nil {
+			return "", err
+		}
+	} else if mode == "RC4" {
+		decrypted, err = utils.RC4Decrypt(encryption, utils.FILE_KEY_RC4)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		decrypted, err = utils.AESDecrypt(encryption, utils.FILE_KEY_AES)
+		if err != nil {
+			return "", err
+		}
 	}
 
-	return result, nil
+	return decrypted, nil
 }
