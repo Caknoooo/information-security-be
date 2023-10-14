@@ -12,4 +12,4 @@ type (
 		UserId     uuid.UUID `json:"user_id"`
 		User       *User     `json:"user" gorm:"foreignKey:UserId"`
 	}
-)
+) // /api/encryption

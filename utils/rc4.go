@@ -24,7 +24,6 @@ func RC4Encrypt(stringToEncrypt string, KEYS string) (encryptedString string, da
 		"key":       KEYS,
 		"plaintext": string(plaintext),
 		"block":     fmt.Sprintf("%v", cipher),
-		"ciphertext": fmt.Sprintf("%x", ciphertext),
 		"mode":      "RC4",
 	}
 

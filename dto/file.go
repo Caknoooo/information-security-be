@@ -14,7 +14,6 @@ const (
 type (
 	UploadFileRequest struct {
 		File     *multipart.FileHeader `form:"file" binding:"required"`
-		Mode     string                `form:"mode" binding:"required"`
 		FileType string                `form:"file_type"`
 	}
 

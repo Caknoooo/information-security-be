@@ -13,7 +13,7 @@ import (
 
 type (
 	FileService interface {
-		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error)
+		UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string, mode string) (dto.UploadFileResponse, error)
 		GetAllFileByUser(ctx context.Context, userId string) ([]dto.UploadFileResponse, error)
 		DecryptFileData(ctx context.Context, encryption string, mode string) (string, error)
 	}
@@ -34,7 +34,7 @@ const (
 	FILES = "files"
 )
 
-func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string) (dto.UploadFileResponse, error) {
+func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest, userId string, mode string) (dto.UploadFileResponse, error) {
 	fileId := uuid.New()
 
 	fileName := fmt.Sprintf("%s/files/%s", userId, fileId)
@@ -46,12 +46,12 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	var data map[string]interface{}
 	var err error
 
-	if req.Mode == "DES" {
+	if mode == "DES" {
 		encryption, data, err = utils.DESEncrypt(fileName, utils.FILE_KEY_DES)
 		if err != nil {
 			return dto.UploadFileResponse{}, err
 		}
-	} else if req.Mode == "RC4" {
+	} else if mode == "RC4" {
 		encryption, data, err = utils.RC4Encrypt(fileName, utils.FILE_KEY_RC4)
 		if err != nil {
 			return dto.UploadFileResponse{}, err
@@ -104,7 +104,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		return dto.UploadFileResponse{}, err
 	}
 
-	return dto.UploadFileResponse{
+	resp := dto.UploadFileResponse{
 		Path:             fileName,
 		Filename:         req.File.Filename,
 		FileType:         req.FileType,
@@ -112,9 +112,14 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		AES_KEY:          data["key"].(string),
 		AES_PLAIN_TEXT:   data["plaintext"].(string),
 		AES_BLOCK_CHIPER: data["block"].(string),
-		AES_CIPHERTEXT:   data["ciphertext"].(string),
 		AES_RESULT:       encryption,
-	}, nil
+	}
+
+	if data["mode_chiper"] != nil {
+		resp.AES_CIPHERTEXT = data["mode_chiper"].(string)
+	}
+
+	return resp, nil
 }
 
 func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]dto.UploadFileResponse, error) {
