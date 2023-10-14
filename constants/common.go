@@ -7,6 +7,10 @@ const (
 	ENUM_RUN_PRODUCTION = "production"
 	ENUM_RUN_TESTING    = "testing"
 
+	ENUM_ENCRYPTION_AES = "aes"
+	ENUM_ENCRYPTION_DES = "des"
+	ENUM_ENCRYPTION_RC4 = "rc4"
+
 	ENUM_FILE_TYPE_IMAGE    = "image"
 	ENUM_FILE_TYPE_VIDEO    = "video"
 	ENUM_FILE_TYPE_DOCUMENT = "document"

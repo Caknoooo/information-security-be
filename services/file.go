@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Caknoooo/golang-clean_template/constants"
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/Caknoooo/golang-clean_template/repository"
@@ -46,12 +47,12 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	var data map[string]interface{}
 	var err error
 
-	if mode == "DES" {
+	if mode == constants.ENUM_ENCRYPTION_DES {
 		encryption, data, err = utils.DESEncrypt(fileName, utils.FILE_KEY_DES)
 		if err != nil {
 			return dto.UploadFileResponse{}, err
 		}
-	} else if mode == "RC4" {
+	} else if mode == constants.ENUM_ENCRYPTION_RC4 {
 		encryption, data, err = utils.RC4Encrypt(fileName, utils.FILE_KEY_RC4)
 		if err != nil {
 			return dto.UploadFileResponse{}, err
@@ -145,12 +146,12 @@ func (s *fileService) DecryptFileData(ctx context.Context, encryption string, mo
 	var decrypted string
 	var err error
 
-	if mode == "DES" {
+	if mode == constants.ENUM_ENCRYPTION_DES {
 		decrypted, err = utils.DESDecrypt(encryption, utils.FILE_KEY_DES)
 		if err != nil {
 			return "", err
 		}
-	} else if mode == "RC4" {
+	} else if mode == constants.ENUM_ENCRYPTION_RC4 {
 		decrypted, err = utils.RC4Decrypt(encryption, utils.FILE_KEY_RC4)
 		if err != nil {
 			return "", err
