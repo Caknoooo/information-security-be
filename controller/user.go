@@ -196,8 +196,23 @@ func (c *userController) VerifyEmail(ctx *gin.Context) {
 		return
 	}
 
-	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_VERIFY_EMAIL, result)
-	ctx.JSON(http.StatusOK, res)
+	user, err := c.userService.GetUserByEmail(ctx.Request.Context(), result.Email)
+	if err != nil {
+		response := utils.BuildResponseFailed(dto.MESSAGE_FAILED_LOGIN, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	token := c.jwtService.GenerateToken(user.ID, user.Role)
+	userResponse := dto.UserVerifyEmailResponse{
+		Email: result.Email,
+		IsVerified: result.IsVerified,
+		Token: token,
+		Role:  user.Role,
+	}
+
+	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_LOGIN, userResponse)
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *userController) Update(ctx *gin.Context) {

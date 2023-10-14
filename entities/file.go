@@ -10,6 +10,6 @@ type (
 		Encryption string    `json:"encryption"`
 		FileType   string    `json:"file_type"`
 		UserId     uuid.UUID `json:"user_id"`
-		User       *User     `json:"user" gorm:"foreignKey:UserId"`
+		User       *User     `json:"user" gorm:"foreignKey:UserId;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	}
-) // /api/encryption
+) 

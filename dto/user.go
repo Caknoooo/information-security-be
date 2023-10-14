@@ -70,6 +70,13 @@ type (
 		CreatedAt  string               `json:"created_at,omitempty"`
 	}
 
+	UserVerifyEmailResponse struct {
+		Email      string `json:"email"`
+		IsVerified bool   `json:"is_verified"`
+		Token      string `json:"token"`
+		Role       string `json:"role"`
+	}
+
 	UserUpdateRequest struct {
 		Name       string `json:"name" form:"name"`
 		TelpNumber string `json:"telp_number" form:"telp_number"`
