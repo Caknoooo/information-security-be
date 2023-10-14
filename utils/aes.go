@@ -14,8 +14,8 @@ const (
 	// todo
 	KEY = "8e71bbce7451ba2835de5aea73e4f3f96821455240823d2fd8174975b8321bfc!"
 	FILE_KEY_AES = "8e71bbce7451ba2835de5aea73e4f3f9!"
-	FILE_KEY_DES = "8e71bbce7451ba2835de5aea73e4f3f9!"
-	FILE_KEY_RC4 = "8e71bbce7451ba2835de5aea73e4f3f9!"
+	FILE_KEY_DES = "0011223344556677!"
+	FILE_KEY_RC4 = "0011223344556677!"
 )
 
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes

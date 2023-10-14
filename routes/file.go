@@ -12,6 +12,6 @@ func File(route *gin.Engine, fileController controller.FileController, jwtServic
 	{
 		routes.POST("", middleware.Authenticate(jwtService) ,fileController.UploadFile)
 		routes.GET("", middleware.Authenticate(jwtService) ,fileController.GetAllFileByUser)
-		routes.GET("/:filename", fileController.GetFile)
+		routes.GET("/get", fileController.GetFile)
 	}
 }

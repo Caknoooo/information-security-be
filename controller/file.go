@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -33,6 +34,7 @@ func NewFileController(fileService services.FileService, jwtService services.JWT
 
 func (c *fileController) UploadFile(ctx *gin.Context) {
 	userId := ctx.MustGet("user_id").(string)
+	mode := ctx.Query("mode")
 
 	var req dto.UploadFileRequest
 	if err := ctx.ShouldBind(&req); err != nil {
@@ -41,7 +43,7 @@ func (c *fileController) UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.fileService.UploadFile(ctx.Request.Context(), req, userId)
+	result, err := c.fileService.UploadFile(ctx.Request.Context(), req, userId, mode)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPLOAD_FILE, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)
@@ -68,7 +70,7 @@ func (c *fileController) GetAllFileByUser(ctx *gin.Context) {
 
 func (c *fileController) GetFile(ctx *gin.Context) {
 	mode := ctx.Query("mode")
-	filename := ctx.Param("filename")
+	filename := ctx.Query("filename")
 
 	fileDecrypt, err := c.fileService.DecryptFileData(ctx.Request.Context(), filename, mode)
 	if err != nil {
@@ -76,6 +78,8 @@ func (c *fileController) GetFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
+
+	fmt.Println(mode, filename, fileDecrypt)
 
 	data := strings.Split(fileDecrypt, "/")
 	filePath := utils.PATH + "/" + data[0] + "/" + data[1] + "/" + data[2]
