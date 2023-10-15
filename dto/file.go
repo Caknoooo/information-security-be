@@ -29,5 +29,6 @@ type (
 		AES_CIPHERTEXT   string `json:"aes_ciphertext,omitempty"`
 		AES_NONCE        string `json:"aes_nonce,omitempty"`
 		AES_RESULT       string `json:"aes_result,omitempty"`
+		ELAPSEDTIME      string `json:"elapsed_time,omitempty"`
 	}
 )

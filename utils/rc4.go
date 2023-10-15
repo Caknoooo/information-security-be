@@ -5,10 +5,16 @@ import (
 	"crypto/rc4"
 	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 // RC4Encrypt melakukan enkripsi RC4
 func RC4Encrypt(stringToEncrypt string, KEYS string) (encryptedString string, data map[string]interface{}, err error) {
+	elapsedTimer := timerWithReturn("RC4Encrypt")
+	defer elapsedTimer()
+
+	time.Sleep(1 * time.Second)
+
 	key := []byte(KEYS)
 	plaintext := []byte(stringToEncrypt)
 
@@ -25,6 +31,7 @@ func RC4Encrypt(stringToEncrypt string, KEYS string) (encryptedString string, da
 		"plaintext": string(plaintext),
 		"block":     fmt.Sprintf("%v", cipher),
 		"mode":      "RC4",
+		"elapsed":   elapsedTimer().String(),
 	}
 
 	return fmt.Sprintf("%x", ciphertext), data, err

@@ -7,10 +7,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 )
 
 // Encrypt data using DES with PKCS7 padding
 func DESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, data map[string]interface{}, err error) {
+	elapsedTimer := timerWithReturn("DESEncrypt")
+	defer elapsedTimer()
+
+	time.Sleep(1 * time.Second)
+
 	key, _ := hex.DecodeString(KEYS)
 	plaintext := []byte(stringToEncrypt)
 
@@ -37,6 +43,7 @@ func DESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, da
 		"block":       fmt.Sprintf("%d", block.BlockSize()),
 		"mode_chiper": fmt.Sprintf("%v", mode),
 		"mode":        "DES",
+		"elapsed":     elapsedTimer().String(),
 	}
 
 	return fmt.Sprintf("%x", ciphertext), data, err

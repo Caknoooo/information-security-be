@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 	"io"
 )
 
@@ -21,6 +22,11 @@ const (
 // https://www.melvinvivas.com/how-to-encrypt-and-decrypt-data-using-aes
 
 func AESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, data map[string]interface{}, err error) {
+	elapsedTimer := timerWithReturn("AESEncrypt")
+	defer elapsedTimer()
+
+	time.Sleep(1 * time.Second)
+
 	key, _ := hex.DecodeString(KEYS)
 	plaintext := []byte(stringToEncrypt)
 
@@ -48,6 +54,7 @@ func AESEncrypt(stringToEncrypt string, KEYS string) (encryptedString string, da
     "aes-gcm":   fmt.Sprintf("%v", aesGCM), 
 		"nonce":     hex.EncodeToString(nonce),
 		"mode":      "AES",
+		"elapsed":   elapsedTimer().String(),
 	}
 
 	return fmt.Sprintf("%x", ciphertext), data, err

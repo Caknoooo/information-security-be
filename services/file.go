@@ -88,6 +88,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 			AES_GCM:          data["aes-gcm"].(string),
 			AES_NONCE:        data["nonce"].(string),
 			AES_RESULT:       encryption,
+			ELAPSEDTIME:      data["elapsed"].(string),
 		}, nil
 	}
 
@@ -114,6 +115,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		AES_PLAIN_TEXT:   data["plaintext"].(string),
 		AES_BLOCK_CHIPER: data["block"].(string),
 		AES_RESULT:       encryption,
+		ELAPSEDTIME:      data["elapsed"].(string),
 	}
 
 	if data["mode_chiper"] != nil {
