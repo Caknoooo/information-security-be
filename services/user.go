@@ -147,6 +147,10 @@ func (s *userService) SendVerificationEmail(ctx context.Context, req dto.SendVer
 		return dto.ErrEmailNotFound
 	}
 
+	if user.IsVerified {
+		return dto.ErrAccountAlreadyVerified
+	}
+
 	draftEmail, err := makeVerificationEmail(user.Email)
 	if err != nil {
 		return err
