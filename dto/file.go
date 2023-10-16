@@ -22,6 +22,7 @@ type (
 		Filename         string `json:"file_name"`
 		FileType         string `json:"file_type"`
 		Encryption       string `json:"encryption"`
+		EncryptionMode   string `json:"mode"`
 		AES_KEY          string `json:"aes_key,omitempty"`
 		AES_PLAIN_TEXT   string `json:"aes_plain_text,omitempty"`
 		AES_BLOCK_CHIPER string `json:"aes_block_chiper,omitempty"`

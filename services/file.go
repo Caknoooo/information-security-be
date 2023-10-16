@@ -64,12 +64,13 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		}
 
 		uploadFile := entities.File{
-			ID:         fileId,
-			Path:       fileName,
-			Encryption: encryption,
-			FileType:   req.FileType,
-			FileName:   req.File.Filename,
-			UserId:     uuid.MustParse(userId),
+			ID:             fileId,
+			Path:           fileName,
+			Encryption:     encryption,
+			EncryptionMode: constants.ENUM_ENCRYPTION_AES,
+			FileType:       req.FileType,
+			FileName:       req.File.Filename,
+			UserId:         uuid.MustParse(userId),
 		}
 
 		_, err = s.fileRepo.Create(ctx, nil, uploadFile)
@@ -82,6 +83,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 			Filename:         req.File.Filename,
 			FileType:         req.FileType,
 			Encryption:       encryption,
+			EncryptionMode:   uploadFile.EncryptionMode,
 			AES_KEY:          data["key"].(string),
 			AES_PLAIN_TEXT:   data["plaintext"].(string),
 			AES_BLOCK_CHIPER: data["block"].(string),
@@ -93,12 +95,13 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 	}
 
 	uploadFile := entities.File{
-		ID:         fileId,
-		Path:       fileName,
-		Encryption: encryption,
-		FileType:   req.FileType,
-		FileName:   req.File.Filename,
-		UserId:     uuid.MustParse(userId),
+		ID:             fileId,
+		Path:           fileName,
+		Encryption:     encryption,
+		EncryptionMode: mode,
+		FileType:       req.FileType,
+		FileName:       req.File.Filename,
+		UserId:         uuid.MustParse(userId),
 	}
 
 	_, err = s.fileRepo.Create(ctx, nil, uploadFile)
@@ -111,6 +114,7 @@ func (s *fileService) UploadFile(ctx context.Context, req dto.UploadFileRequest,
 		Filename:         req.File.Filename,
 		FileType:         req.FileType,
 		Encryption:       encryption,
+		EncryptionMode:   mode,
 		AES_KEY:          data["key"].(string),
 		AES_PLAIN_TEXT:   data["plaintext"].(string),
 		AES_BLOCK_CHIPER: data["block"].(string),
@@ -134,10 +138,11 @@ func (s *fileService) GetAllFileByUser(ctx context.Context, userId string) ([]dt
 	var files []dto.UploadFileResponse
 	for _, file := range result {
 		files = append(files, dto.UploadFileResponse{
-			Path:       file.Path,
-			Filename:   file.FileName,
-			FileType:   file.FileType,
-			Encryption: file.Encryption,
+			Path:           file.Path,
+			Filename:       file.FileName,
+			FileType:       file.FileType,
+			Encryption:     file.Encryption,
+			EncryptionMode: file.EncryptionMode,
 		})
 	}
 
