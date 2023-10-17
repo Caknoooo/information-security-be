@@ -268,10 +268,11 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 	var files []dto.UploadFileResponse
 	for _, file := range fileUser {
 		data := dto.UploadFileResponse{
-			Path:       file.Path,
-			Filename:   file.FileName,
-			FileType:   file.FileType,
-			Encryption: file.Encryption,
+			Path:           file.Path,
+			Filename:       file.FileName,
+			FileType:       file.FileType,
+			Encryption:     file.Encryption,
+			EncryptionMode: file.EncryptionMode,
 		}
 
 		files = append(files, data)
