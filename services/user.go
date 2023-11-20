@@ -29,6 +29,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, req dto.UserUpdateRequest, userId string) (dto.UserUpdateResponse, error)
 	DeleteUser(ctx context.Context, userId string) error
 	Verify(ctx context.Context, email string, password string) (bool, error)
+	RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error)
 }
 
 const (
@@ -79,12 +80,15 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 	}
 
 	return dto.UserResponse{
-		ID:         userReg.ID.String(),
-		Name:       userReg.Name,
-		TelpNumber: userReg.TelpNumber,
-		Role:       userReg.Role,
-		Email:      userReg.Email,
-		IsVerified: userReg.IsVerified,
+		ID:           userReg.ID.String(),
+		Name:         userReg.Name,
+		TelpNumber:   userReg.TelpNumber,
+		Role:         userReg.Role,
+		Email:        userReg.Email,
+		IsVerified:   userReg.IsVerified,
+		PublicKey:    userReg.PublicKey,
+		PrivateKey:   userReg.PrivateKey,
+		SymmetricKey: userReg.SymmetricKey,
 	}, nil
 }
 
@@ -200,9 +204,27 @@ func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailReques
 		return dto.VerifyEmailResponse{}, dto.ErrAccountAlreadyVerified
 	}
 
+	publicKey, err := utils.GenerateKey(32)
+	if err != nil {
+		return dto.VerifyEmailResponse{}, dto.ErrCreateUser
+	}
+
+	privateKey, err := utils.GenerateKey(32)
+	if err != nil {
+		return dto.VerifyEmailResponse{}, dto.ErrCreateUser
+	}
+
+	symKey, err := utils.GenerateKey(32)
+	if err != nil {
+		return dto.VerifyEmailResponse{}, dto.ErrCreateUser
+	}
+
 	updatedUser, err := s.userRepo.UpdateUser(ctx, entities.User{
-		ID:         user.ID,
-		IsVerified: true,
+		ID:           user.ID,
+		IsVerified:   true,
+		PublicKey:    publicKey,
+		PrivateKey:   privateKey,
+		SymmetricKey: symKey,
 	})
 	if err != nil {
 		return dto.VerifyEmailResponse{}, dto.ErrUpdateUser
@@ -232,13 +254,16 @@ func (s *userService) GetAllUser(ctx context.Context, adminId string) ([]dto.Use
 	var userResponse []dto.UserResponse
 	for _, user := range users {
 		userResponse = append(userResponse, dto.UserResponse{
-			ID:         user.ID.String(),
-			Name:       user.Name,
-			TelpNumber: user.TelpNumber,
-			Role:       user.Role,
-			Email:      user.Email,
-			IsVerified: user.IsVerified,
-			CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
+			ID:           user.ID.String(),
+			Name:         user.Name,
+			TelpNumber:   user.TelpNumber,
+			Role:         user.Role,
+			Email:        user.Email,
+			IsVerified:   user.IsVerified,
+			PublicKey:    user.PublicKey,
+			PrivateKey:   user.PrivateKey,
+			SymmetricKey: user.SymmetricKey,
+			CreatedAt:    string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 		})
 	}
 
@@ -279,15 +304,18 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 	}
 
 	return dto.UserResponse{
-		ID:         user.ID.String(),
-		Name:       user.Name,
-		TelpNumber: user.TelpNumber,
-		Role:       user.Role,
-		Email:      user.Email,
-		IsVerified: user.IsVerified,
-		Files:      files,
-		Work:       user.Work,
-		CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
+		ID:           user.ID.String(),
+		Name:         user.Name,
+		TelpNumber:   user.TelpNumber,
+		Role:         user.Role,
+		Email:        user.Email,
+		IsVerified:   user.IsVerified,
+		PublicKey:    user.PublicKey,
+		PrivateKey:   user.PrivateKey,
+		SymmetricKey: user.SymmetricKey,
+		Files:        files,
+		Work:         user.Work,
+		CreatedAt:    string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 	}, nil
 }
 
@@ -338,6 +366,7 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		TelpNumber: user.TelpNumber,
 		Role:       user.Role,
 		Email:      user.Email,
+		PublicKey:  user.PublicKey,
 		IsVerified: user.IsVerified,
 	}, nil
 }
@@ -354,6 +383,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (dto.Use
 		TelpNumber: emails.TelpNumber,
 		Role:       emails.Role,
 		Email:      emails.Email,
+		PublicKey:  emails.PublicKey,
 		IsVerified: emails.IsVerified,
 	}, nil
 }
@@ -436,4 +466,31 @@ func (s *userService) Verify(ctx context.Context, email string, password string)
 	}
 
 	return false, dto.ErrEmailOrPassword
+}
+
+func (s *userService) RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error) {
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return dto.UserKeyResponse{}, dto.ErrUserNotFound
+	}
+
+	newKey, err := utils.GenerateKey(32)
+	if err != nil {
+		return dto.UserKeyResponse{}, dto.ErrUpdateUser
+	}
+
+	data := entities.User{
+		ID:           user.ID,
+		SymmetricKey: newKey,
+	}
+
+	userUpdate, err := s.userRepo.UpdateUser(ctx, data)
+	if err != nil {
+		return dto.UserKeyResponse{}, dto.ErrUpdateUser
+	}
+
+	return dto.UserKeyResponse{
+		ID:  userUpdate.ID.String(),
+		Key: newKey,
+	}, nil
 }

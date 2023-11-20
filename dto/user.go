@@ -59,15 +59,18 @@ type (
 	}
 
 	UserResponse struct {
-		ID         string               `json:"id"`
-		Name       string               `json:"name"`
-		TelpNumber string               `json:"telp_number"`
-		Role       string               `json:"role"`
-		Email      string               `json:"email"`
-		IsVerified bool                 `json:"is_verified"`
-		Work       string               `json:"work,omitempty"`
-		Files      []UploadFileResponse `json:"files,omitempty"`
-		CreatedAt  string               `json:"created_at,omitempty"`
+		ID           string               `json:"id"`
+		Name         string               `json:"name"`
+		TelpNumber   string               `json:"telp_number"`
+		Role         string               `json:"role"`
+		Email        string               `json:"email"`
+		IsVerified   bool                 `json:"is_verified"`
+		PublicKey    string               `json:"public_key"`
+		PrivateKey   string               `json:"private_key"`
+		SymmetricKey string               `json:"symmetric_key"`
+		Work         string               `json:"work,omitempty"`
+		Files        []UploadFileResponse `json:"files,omitempty"`
+		CreatedAt    string               `json:"created_at,omitempty"`
 	}
 
 	UserVerifyEmailResponse struct {
@@ -93,6 +96,11 @@ type (
 		Email      string `json:"email,omitempty"`
 		Work       string `json:"work,omitempty"`
 		IsVerified bool   `json:"is_verified,omitempty"`
+	}
+
+	UserKeyResponse struct {
+		ID  string `json:"id"`
+		Key string `json:"key"`
 	}
 
 	SendVerificationEmailRequest struct {
