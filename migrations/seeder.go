@@ -53,14 +53,8 @@ func ListUserSeeder(db *gorm.DB) error {
 			return err
 		}
 
-		data.TelpNumber, _, err = utils.AESEncrypt(data.TelpNumber, utils.KEY)
-		if err != nil {
-			return err
-		}
-
-		data.Name, _, err = utils.AESEncrypt(data.Name, utils.KEY)
-		if err != nil {
-			return err
+		if user != (entities.User{}) {
+			break
 		}
 
 		symKey, err := utils.GenerateKey(32)
@@ -73,24 +67,21 @@ func ListUserSeeder(db *gorm.DB) error {
 			return err
 		}
 
-		symKey, _, err = utils.AESEncrypt(symKey, utils.KEY)
-		if err != nil {
-			return err
-		}
-
-		keys := [3]string{pubKey, privKey, symKey}
-		var encryptedKeys []string
-		for i := 0; i < 3; i++ {
-			encryptedKey, _, err := utils.AESEncrypt(keys[i], utils.KEY)
+		datas := []string{data.Name, data.TelpNumber, pubKey, privKey, symKey}
+		var encryptedDatas []string
+		for i := 0; i < len(datas); i++ {
+			encryptedData, _, err := utils.AESEncrypt(datas[i], utils.KEY)
 			if err != nil {
 				return err
 			}
-			encryptedKeys = append(encryptedKeys, encryptedKey)
+			encryptedDatas = append(encryptedDatas, encryptedData)
 		}
 
-		data.PublicKey = encryptedKeys[0]
-		data.PrivateKey = encryptedKeys[1]
-		data.SymmetricKey = encryptedKeys[2]
+		data.Name = encryptedDatas[0]
+		data.TelpNumber = encryptedDatas[1]
+		data.PublicKey = encryptedDatas[2]
+		data.PrivateKey = encryptedDatas[3]
+		data.SymmetricKey = encryptedDatas[4]
 
 		isData := db.Find(&user, "email = ?", data.Email).RowsAffected
 		if isData == 0 {

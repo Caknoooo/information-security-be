@@ -21,7 +21,6 @@ type UserController interface {
 	Login(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
-	RegenerateKey(ctx *gin.Context)
 }
 
 type userController struct {
@@ -259,25 +258,5 @@ func (c *userController) Delete(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_DELETE_USER, nil)
-	ctx.JSON(http.StatusOK, res)
-}
-
-func (c *userController) RegenerateKey(ctx *gin.Context) {
-	token := ctx.MustGet("token").(string)
-	userID, err := c.jwtService.GetUserIDByToken(token)
-	if err != nil {
-		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_USER_TOKEN, dto.MESSAGE_FAILED_TOKEN_NOT_VALID, nil)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
-	result, err := c.userService.RegenerateKey(ctx.Request.Context(), userID)
-	if err != nil {
-		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPDATE_USER, err.Error(), nil)
-		ctx.JSON(http.StatusBadRequest, res)
-		return
-	}
-
-	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_USER, result)
 	ctx.JSON(http.StatusOK, res)
 }

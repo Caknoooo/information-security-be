@@ -29,7 +29,6 @@ type UserService interface {
 	UpdateUser(ctx context.Context, req dto.UserUpdateRequest, userId string) (dto.UserUpdateResponse, error)
 	DeleteUser(ctx context.Context, userId string) error
 	Verify(ctx context.Context, email string, password string) (bool, error)
-	RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error)
 }
 
 const (
@@ -54,7 +53,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 	if email {
 		return dto.UserResponse{}, dto.ErrEmailAlreadyExists
 	}
-	
+
 	encryptedName, _, err := utils.AESEncrypt(req.Name, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
@@ -241,38 +240,38 @@ func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailReques
 func (s *userService) GetAllUser(ctx context.Context, adminId string) ([]dto.UserResponse, error) {
 	admin, err := s.userRepo.GetUserById(ctx, adminId)
 	if err != nil {
-		return nil, dto.ErrUserNotFound
+		return []dto.UserResponse{}, dto.ErrUserNotFound
 	}
 
 	if admin.Role != constants.ENUM_ROLE_ADMIN {
-		return nil, dto.ErrUserNotAdmin
+		return []dto.UserResponse{}, dto.ErrUserNotAdmin
 	}
 
 	users, err := s.userRepo.GetAllUser(ctx)
 	if err != nil {
-		return nil, dto.ErrGetAllUser
+		return []dto.UserResponse{}, dto.ErrGetAllUser
 	}
 
 	var userResponse []dto.UserResponse
 	for _, user := range users {
-		decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
-		if err != nil {
-			return []dto.UserResponse{}, err
-		}
-
-		decryptedTelp, err := utils.AESDecrypt(user.TelpNumber, utils.KEY)
-		if err != nil {
-			return []dto.UserResponse{}, err
+		datas := []string{user.Name, user.TelpNumber, user.PublicKey}
+		var encDatas []string
+		for i := 0; i < len(datas); i++ {
+			encData, err := utils.AESDecrypt(datas[i], utils.KEY)
+			if err != nil {
+				return []dto.UserResponse{}, err
+			}
+			encDatas = append(encDatas, encData)
 		}
 
 		userResponse = append(userResponse, dto.UserResponse{
 			ID:         user.ID.String(),
-			Name:       decryptedName,
-			TelpNumber: decryptedTelp,
+			Name:       encDatas[0],
+			TelpNumber: encDatas[1],
 			Role:       user.Role,
 			Email:      user.Email,
 			IsVerified: user.IsVerified,
-			PublicKey:  user.PublicKey,
+			PublicKey:  encDatas[2],
 			CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 		})
 	}
@@ -313,31 +312,26 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		files = append(files, data)
 	}
 
-	decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedTelp, err := utils.AESDecrypt(user.TelpNumber, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedSymKey, err := utils.AESDecrypt(user.SymmetricKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
+	datas := []string{user.Name, user.TelpNumber, user.PublicKey, user.PrivateKey, user.SymmetricKey}
+	var encDatas []string
+	for i := 0; i < len(datas); i++ {
+		encData, err := utils.AESDecrypt(datas[i], utils.KEY)
+		if err != nil {
+			return dto.UserResponse{}, err
+		}
+		encDatas = append(encDatas, encData)
 	}
 
 	return dto.UserResponse{
 		ID:           user.ID.String(),
-		Name:         decryptedName,
-		TelpNumber:   decryptedTelp,
+		Name:         encDatas[0],
+		TelpNumber:   encDatas[1],
 		Role:         user.Role,
 		Email:        user.Email,
 		IsVerified:   user.IsVerified,
-		PublicKey:    user.PublicKey,
-		PrivateKey:   user.PrivateKey,
-		SymmetricKey: decryptedSymKey,
+		PublicKey:    encDatas[2],
+		PrivateKey:   encDatas[3],
+		SymmetricKey: encDatas[4],
 		Files:        files,
 		Work:         user.Work,
 		CreatedAt:    string(user.CreatedAt.Format("2006-01-02 15:04:05")),
@@ -385,30 +379,25 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		return dto.UserResponse{}, dto.ErrGetUserById
 	}
 
-	decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedTelp, err := utils.AESDecrypt(user.TelpNumber, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedSymKey, err := utils.AESDecrypt(user.SymmetricKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
+	datas := []string{user.Name, user.TelpNumber, user.PublicKey, user.PrivateKey, user.SymmetricKey}
+	var encDatas []string
+	for i := 0; i < len(datas); i++ {
+		encData, err := utils.AESDecrypt(datas[i], utils.KEY)
+		if err != nil {
+			return dto.UserResponse{}, err
+		}
+		encDatas = append(encDatas, encData)
 	}
 
 	return dto.UserResponse{
 		ID:           user.ID.String(),
-		Name:         decryptedName,
-		TelpNumber:   decryptedTelp,
+		Name:         encDatas[0],
+		TelpNumber:   encDatas[1],
 		Role:         user.Role,
 		Email:        user.Email,
-		PublicKey:    user.PublicKey,
-		PrivateKey:   user.PrivateKey,
-		SymmetricKey: decryptedSymKey,
+		PublicKey:    encDatas[2],
+		PrivateKey:   encDatas[3],
+		SymmetricKey: encDatas[4],
 		IsVerified:   user.IsVerified,
 	}, nil
 }
@@ -419,23 +408,23 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (dto.Use
 		return dto.UserResponse{}, dto.ErrGetUserByEmail
 	}
 
-	decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedTelp, err := utils.AESDecrypt(user.TelpNumber, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
+	datas := []string{user.Name, user.TelpNumber, user.PublicKey}
+	var encDatas []string
+	for i := 0; i < len(datas); i++ {
+		encData, err := utils.AESDecrypt(datas[i], utils.KEY)
+		if err != nil {
+			return dto.UserResponse{}, err
+		}
+		encDatas = append(encDatas, encData)
 	}
 
 	return dto.UserResponse{
 		ID:         user.ID.String(),
-		Name:       decryptedName,
-		TelpNumber: decryptedTelp,
+		Name:       encDatas[0],
+		TelpNumber: encDatas[1],
 		Role:       user.Role,
 		Email:      user.Email,
-		PublicKey:  user.PublicKey,
+		PublicKey:  encDatas[2],
 		IsVerified: user.IsVerified,
 	}, nil
 }
@@ -518,36 +507,4 @@ func (s *userService) Verify(ctx context.Context, email string, password string)
 	}
 
 	return false, dto.ErrEmailOrPassword
-}
-
-func (s *userService) RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error) {
-	user, err := s.userRepo.GetUserById(ctx, userId)
-	if err != nil {
-		return dto.UserKeyResponse{}, dto.ErrUserNotFound
-	}
-
-	newKey, err := utils.GenerateKey(32)
-	if err != nil {
-		return dto.UserKeyResponse{}, dto.ErrCreateUser
-	}
-
-	encryptedKey, _, err := utils.AESEncrypt(newKey, utils.KEY)
-	if err != nil {
-		return dto.UserKeyResponse{}, err
-	}
-
-	data := entities.User{
-		ID:           user.ID,
-		SymmetricKey: encryptedKey,
-	}
-
-	userUpdate, err := s.userRepo.UpdateUser(ctx, data)
-	if err != nil {
-		return dto.UserKeyResponse{}, dto.ErrUpdateUser
-	}
-
-	return dto.UserKeyResponse{
-		ID:  userUpdate.ID.String(),
-		Key: newKey,
-	}, nil
 }
