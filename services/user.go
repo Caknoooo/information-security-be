@@ -14,7 +14,6 @@ import (
 	"github.com/Caknoooo/golang-clean_template/helpers"
 	"github.com/Caknoooo/golang-clean_template/repository"
 	"github.com/Caknoooo/golang-clean_template/utils"
-	"github.com/jinzhu/copier"
 )
 
 type UserService interface {
@@ -51,28 +50,11 @@ func NewUserService(ur repository.UserRepository, fr repository.FileRepository) 
 }
 
 func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateRequest) (dto.UserResponse, error) {
-	users, err := s.userRepo.GetAllUser(ctx)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return dto.UserResponse{}, err
-		}
-
-		if decryptedEmail == req.Email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found != (entities.User{}) {
+	email, _ := s.userRepo.CheckEmail(ctx, req.Email)
+	if email {
 		return dto.UserResponse{}, dto.ErrEmailAlreadyExists
 	}
-
+	
 	encryptedName, _, err := utils.AESEncrypt(req.Name, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
@@ -83,16 +65,11 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 		return dto.UserResponse{}, err
 	}
 
-	encryptedEmail, _, err := utils.AESEncrypt(req.Email, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
 	user := entities.User{
 		Name:       encryptedName,
 		TelpNumber: encryptedTelp,
 		Role:       constants.ENUM_ROLE_USER,
-		Email:      encryptedEmail,
+		Email:      req.Email,
 		Password:   req.Password,
 		IsVerified: false,
 	}
@@ -179,32 +156,6 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 }
 
 func (s *userService) SendVerificationEmail(ctx context.Context, req dto.SendVerificationEmailRequest) error {
-	users, err := s.userRepo.GetAllUser(ctx)
-	if err != nil {
-		return err
-	}
-
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return err
-		}
-
-		if decryptedEmail == req.Email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found == (entities.User{}) {
-		return dto.ErrEmailNotFound
-	}
-
-	if found.IsVerified {
-		return dto.ErrAccountAlreadyVerified
-	}
-
 	draftEmail, err := makeVerificationEmail(req.Email)
 	if err != nil {
 		return err
@@ -245,30 +196,9 @@ func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailReques
 		}, dto.ErrTokenExpired
 	}
 
-	users, err := s.userRepo.GetAllUser(ctx)
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return dto.VerifyEmailResponse{}, err
-	}
-
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return dto.VerifyEmailResponse{}, err
-		}
-
-		if decryptedEmail == email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found == (entities.User{}) {
 		return dto.VerifyEmailResponse{}, dto.ErrUserNotFound
-	}
-
-	if found.IsVerified {
-		return dto.VerifyEmailResponse{}, dto.ErrAccountAlreadyVerified
 	}
 
 	symKey, err := utils.GenerateKey(32)
@@ -292,7 +222,7 @@ func (s *userService) VerifyEmail(ctx context.Context, req dto.VerifyEmailReques
 	}
 
 	updatedUser, err := s.userRepo.UpdateUser(ctx, entities.User{
-		ID:           found.ID,
+		ID:           user.ID,
 		IsVerified:   true,
 		PublicKey:    encryptedKeys[0],
 		PrivateKey:   encryptedKeys[1],
@@ -335,24 +265,14 @@ func (s *userService) GetAllUser(ctx context.Context, adminId string) ([]dto.Use
 			return []dto.UserResponse{}, err
 		}
 
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return []dto.UserResponse{}, err
-		}
-
-		decryptedPubKey, err := utils.AESDecrypt(user.PublicKey, utils.KEY)
-		if err != nil {
-			return []dto.UserResponse{}, err
-		}
-
 		userResponse = append(userResponse, dto.UserResponse{
 			ID:         user.ID.String(),
 			Name:       decryptedName,
 			TelpNumber: decryptedTelp,
 			Role:       user.Role,
-			Email:      decryptedEmail,
+			Email:      user.Email,
 			IsVerified: user.IsVerified,
-			PublicKey:  decryptedPubKey,
+			PublicKey:  user.PublicKey,
 			CreatedAt:  string(user.CreatedAt.Format("2006-01-02 15:04:05")),
 		})
 	}
@@ -403,21 +323,6 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		return dto.UserResponse{}, err
 	}
 
-	decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedPubKey, err := utils.AESDecrypt(user.PublicKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedPrivKey, err := utils.AESDecrypt(user.PrivateKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
 	decryptedSymKey, err := utils.AESDecrypt(user.SymmetricKey, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
@@ -428,10 +333,10 @@ func (s *userService) GetUserByAdmin(ctx context.Context, adminId string, userId
 		Name:         decryptedName,
 		TelpNumber:   decryptedTelp,
 		Role:         user.Role,
-		Email:        decryptedEmail,
+		Email:        user.Email,
 		IsVerified:   user.IsVerified,
-		PublicKey:    decryptedPubKey,
-		PrivateKey:   decryptedPrivKey,
+		PublicKey:    user.PublicKey,
+		PrivateKey:   user.PrivateKey,
 		SymmetricKey: decryptedSymKey,
 		Files:        files,
 		Work:         user.Work,
@@ -490,21 +395,6 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		return dto.UserResponse{}, err
 	}
 
-	decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedPubKey, err := utils.AESDecrypt(user.PublicKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedPrivKey, err := utils.AESDecrypt(user.PrivateKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
 	decryptedSymKey, err := utils.AESDecrypt(user.SymmetricKey, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
@@ -515,89 +405,49 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		Name:         decryptedName,
 		TelpNumber:   decryptedTelp,
 		Role:         user.Role,
-		Email:        decryptedEmail,
-		PublicKey:    decryptedPubKey,
-		PrivateKey:   decryptedPrivKey,
+		Email:        user.Email,
+		PublicKey:    user.PublicKey,
+		PrivateKey:   user.PrivateKey,
 		SymmetricKey: decryptedSymKey,
 		IsVerified:   user.IsVerified,
 	}, nil
 }
 
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (dto.UserResponse, error) {
-	users, err := s.userRepo.GetAllUser(ctx)
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return dto.UserResponse{}, dto.ErrGetUserByEmail
+	}
+
+	decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
 	}
 
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return dto.UserResponse{}, err
-		}
-
-		if decryptedEmail == email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found == (entities.User{}) {
-		return dto.UserResponse{}, dto.ErrUserNotFound
-	}
-
-	decryptedName, err := utils.AESDecrypt(found.Name, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedTelp, err := utils.AESDecrypt(found.TelpNumber, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedEmail, err := utils.AESDecrypt(found.Email, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
-	decryptedPublicKey, err := utils.AESDecrypt(found.PublicKey, utils.KEY)
+	decryptedTelp, err := utils.AESDecrypt(user.TelpNumber, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
 	}
 
 	return dto.UserResponse{
-		ID:         found.ID.String(),
+		ID:         user.ID.String(),
 		Name:       decryptedName,
 		TelpNumber: decryptedTelp,
-		Role:       found.Role,
-		Email:      decryptedEmail,
-		PublicKey:  decryptedPublicKey,
-		IsVerified: found.IsVerified,
+		Role:       user.Role,
+		Email:      user.Email,
+		PublicKey:  user.PublicKey,
+		IsVerified: user.IsVerified,
 	}, nil
 }
 
 func (s *userService) CheckUser(ctx context.Context, email string) (bool, error) {
-	users, err := s.userRepo.GetAllUser(ctx)
+	res, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return false, err
 	}
 
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return false, err
-		}
-
-		if decryptedEmail == email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found == (entities.User{}) {
-		return false, dto.ErrUserNotFound
+	if res.Email == "" {
+		return false, err
 	}
 	return true, nil
 }
@@ -649,38 +499,21 @@ func (s *userService) DeleteUser(ctx context.Context, userId string) error {
 }
 
 func (s *userService) Verify(ctx context.Context, email string, password string) (bool, error) {
-	users, err := s.userRepo.GetAllUser(ctx)
+	res, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return false, err
-	}
-
-	var found entities.User
-	for _, user := range users {
-		decryptedEmail, err := utils.AESDecrypt(user.Email, utils.KEY)
-		if err != nil {
-			return false, err
-		}
-
-		if decryptedEmail == email {
-			copier.Copy(&found, &user)
-			break
-		}
-	}
-
-	if found == (entities.User{}) {
 		return false, dto.ErrUserNotFound
 	}
 
-	if !found.IsVerified {
+	if !res.IsVerified {
 		return false, dto.ErrAccountNotVerified
 	}
 
-	checkPassword, err := helpers.CheckPassword(found.Password, []byte(password))
+	checkPassword, err := helpers.CheckPassword(res.Password, []byte(password))
 	if err != nil {
 		return false, dto.ErrPasswordNotMatch
 	}
 
-	if checkPassword {
+	if res.Email == email && checkPassword {
 		return true, nil
 	}
 

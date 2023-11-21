@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 )
 
@@ -50,7 +51,9 @@ func EncryptRSA(data string, publicKey string) (string, error) {
 		return "", err
 	}
 
-	return string(encData), nil
+	sEnc := base64.StdEncoding.EncodeToString(encData)
+
+	return sEnc, nil
 }
 
 func DecryptRSA(data string, privateKey string) (string, error) {
@@ -64,7 +67,12 @@ func DecryptRSA(data string, privateKey string) (string, error) {
 		return "", err
 	}
 
-	decData, err := rsa.DecryptPKCS1v15(rand.Reader, priv, []byte(data))
+	sDec, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		return "", err
+	}
+
+	decData, err := rsa.DecryptPKCS1v15(rand.Reader, priv, []byte(sDec))
 	if err != nil {
 		return "", err
 	}
