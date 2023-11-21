@@ -59,18 +59,21 @@ type (
 	}
 
 	UserResponse struct {
-		ID           string               `json:"id"`
-		Name         string               `json:"name"`
-		TelpNumber   string               `json:"telp_number"`
-		Role         string               `json:"role"`
-		Email        string               `json:"email"`
-		IsVerified   bool                 `json:"is_verified"`
-		PublicKey    string               `json:"public_key,omitempty"`
-		PrivateKey   string               `json:"private_key,omitempty"`
-		SymmetricKey string               `json:"symmetric_key,omitempty"`
-		Work         string               `json:"work,omitempty"`
-		Files        []UploadFileResponse `json:"files,omitempty"`
-		CreatedAt    string               `json:"created_at,omitempty"`
+		ID                 string               `json:"id"`
+		Name               string               `json:"name"`
+		TelpNumber         string               `json:"telp_number"`
+		Role               string               `json:"role"`
+		Email              string               `json:"email"`
+		IsVerified         bool                 `json:"is_verified"`
+		PublicKey          string               `json:"public_key,omitempty"`
+		PrivateKey         string               `json:"private_key,omitempty"`
+		SymmetricKey       string               `json:"symmetric_key,omitempty"`
+		PublicSymmetricKey string               `json:"public_symmetric_key,omitempty"`
+		PublicShareKey     string               `json:"public_share_key,omitempty"`
+		ActivePeriod       string               `json:"active_period"`
+		Work               string               `json:"work,omitempty"`
+		Files              []UploadFileResponse `json:"files,omitempty"`
+		CreatedAt          string               `json:"created_at,omitempty"`
 	}
 
 	UserVerifyEmailResponse struct {
@@ -99,8 +102,8 @@ type (
 	}
 
 	UserKeyResponse struct {
-		ID  string `json:"id"`
-		Key string `json:"key"`
+		ID                 string `json:"id"`
+		PublicSymmetricKey string `json:"public_symmetric_key"`
 	}
 
 	SendVerificationEmailRequest struct {

@@ -1,6 +1,9 @@
 package dto
 
-import "mime/multipart"
+import (
+	"errors"
+	"mime/multipart"
+)
 
 const (
 	MESSAGE_FAILED_UPLOAD_FILE  = "failed upload file"
@@ -9,6 +12,10 @@ const (
 
 	MESSAGE_SUCCESS_UPLOAD_FILE  = "success upload file"
 	MESSAGE_SUCCESS_GET_ALL_FILE = "success get all file"
+)
+
+var (
+	ErrKeyInvalid = errors.New("invalid key")
 )
 
 type (

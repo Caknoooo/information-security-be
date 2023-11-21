@@ -16,31 +16,35 @@ import (
 	"gorm.io/gorm"
 )
 
-func main() {	
+func main() {
 	var (
-		db             *gorm.DB                  = config.SetUpDatabaseConnection()
-		jwtService     services.JWTService       = services.NewJWTService()
-		
+		db         *gorm.DB            = config.SetUpDatabaseConnection()
+		jwtService services.JWTService = services.NewJWTService()
+
 		// Repo
-		userRepository repository.UserRepository = repository.NewUserRepository(db)
-		fileRepository repository.FileRepository = repository.NewFileRepository(db)
+		userRepository         repository.UserRepository         = repository.NewUserRepository(db)
+		fileRepository         repository.FileRepository         = repository.NewFileRepository(db)
+		publicAccessRepository repository.PublicAccessRepository = repository.NewPublicAccessRepository(db)
 
 		// Service
-		userService    services.UserService      = services.NewUserService(userRepository, fileRepository)
-		fileService    services.FileService      = services.NewFileService(fileRepository)
-		
+		userService         services.UserService         = services.NewUserService(userRepository, fileRepository)
+		fileService         services.FileService         = services.NewFileService(fileRepository)
+		publicAccessService services.PublicAccessService = services.NewPublicAccessService(publicAccessRepository, fileRepository, userRepository)
+
 		// Controller
-		userController controller.UserController = controller.NewUserController(userService, jwtService)
-		fileController controller.FileController = controller.NewFileController(fileService, jwtService)
+		userController         controller.UserController         = controller.NewUserController(userService, jwtService)
+		fileController         controller.FileController         = controller.NewFileController(fileService, jwtService)
+		publicAccessController controller.PublicAccessController = controller.NewPublicAccessController(publicAccessService, jwtService)
 	)
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	routes.User(server, userController, jwtService)
 	routes.File(server, fileController, jwtService)
+	routes.PublicAccess(server, publicAccessController, jwtService)
 
 	if err := migrations.Seeder(db); err != nil {
-		log.Fatalf("error migration seeder: %v", err)	
+		log.Fatalf("error migration seeder: %v", err)
 	}
 
 	port := os.Getenv("PORT")

@@ -21,7 +21,7 @@ type UserController interface {
 	Login(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
-	RegenerateKey(ctx *gin.Context)
+	RegeneratePublicKey(ctx *gin.Context)
 }
 
 type userController struct {
@@ -262,7 +262,7 @@ func (c *userController) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (c *userController) RegenerateKey(ctx *gin.Context) {
+func (c *userController) RegeneratePublicKey(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
 	userID, err := c.jwtService.GetUserIDByToken(token)
 	if err != nil {
@@ -271,7 +271,7 @@ func (c *userController) RegenerateKey(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.userService.RegenerateKey(ctx.Request.Context(), userID)
+	result, err := c.userService.RegeneratePublicKey(ctx.Request.Context(), userID)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_UPDATE_USER, err.Error(), nil)
 		ctx.JSON(http.StatusBadRequest, res)

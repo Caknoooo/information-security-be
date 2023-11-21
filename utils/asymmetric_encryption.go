@@ -18,7 +18,7 @@ func GenerateRSAKey() (string, string, error) {
 
 	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
 	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type: "RSA PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: privateKeyBytes,
 	})
 
@@ -28,15 +28,15 @@ func GenerateRSAKey() (string, string, error) {
 	}
 
 	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type: "RSA PUBLIC KEY",
+		Type:  "RSA PUBLIC KEY",
 		Bytes: publicKeyBytes,
 	})
 
 	return string(privateKeyPEM), string(publicKeyPEM), nil
 }
 
-func EncryptRSA(data string, publicKey string) (string, error) {
-	block, _ := pem.Decode([]byte(publicKey))
+func EncryptRSA(data string, key string) (string, error) {
+	block, _ := pem.Decode([]byte(key))
 	if block == nil {
 		return "", nil
 	}
@@ -56,8 +56,8 @@ func EncryptRSA(data string, publicKey string) (string, error) {
 	return sEnc, nil
 }
 
-func DecryptRSA(data string, privateKey string) (string, error) {
-	block, _ := pem.Decode([]byte(privateKey))
+func DecryptRSA(data string, key string) (string, error) {
+	block, _ := pem.Decode([]byte(key))
 	if block == nil {
 		return "", nil
 	}
