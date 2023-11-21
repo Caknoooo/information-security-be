@@ -16,4 +16,8 @@ const (
 	ENUM_FILE_TYPE_DOCUMENT = "document"
 	ENUM_FILE_TYPE_FILE     = "file"
 	ENUM_FILE_TYPE_EMPTY    = ""
+
+	ENUM_STATUS_PENDING = "pending"
+	ENUM_STATUS_REJECTED  = "rejected"
+	ENUM_STATUS_APPROVED = "approved"
 )
