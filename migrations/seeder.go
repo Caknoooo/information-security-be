@@ -5,6 +5,7 @@ import (
 
 	"github.com/Caknoooo/golang-clean_template/constants"
 	"github.com/Caknoooo/golang-clean_template/entities"
+	"github.com/Caknoooo/golang-clean_template/utils"
 	"gorm.io/gorm"
 )
 
@@ -45,10 +46,51 @@ func ListUserSeeder(db *gorm.DB) error {
 
 	for _, data := range listUser {
 		var user entities.User
-		err := db.Where(&entities.User{Email: data.Email}).First(&user).Error
+		var err error
+
+		err = db.Where(&entities.User{Email: data.Email}).First(&user).Error
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
+
+		data.TelpNumber, _, err = utils.AESEncrypt(data.TelpNumber, utils.KEY)
+		if err != nil {
+			return err
+		}
+
+		data.Name, _, err = utils.AESEncrypt(data.Name, utils.KEY)
+		if err != nil {
+			return err
+		}
+
+		symKey, err := utils.GenerateKey(32)
+		if err != nil {
+			return err
+		}
+
+		privKey, pubKey, err := utils.GenerateRSAKey()
+		if err != nil {
+			return err
+		}
+
+		symKey, _, err = utils.AESEncrypt(symKey, utils.KEY)
+		if err != nil {
+			return err
+		}
+
+		keys := [3]string{pubKey, privKey, symKey}
+		var encryptedKeys []string
+		for i := 0; i < 3; i++ {
+			encryptedKey, _, err := utils.AESEncrypt(keys[i], utils.KEY)
+			if err != nil {
+				return err
+			}
+			encryptedKeys = append(encryptedKeys, encryptedKey)
+		}
+
+		data.PublicKey = encryptedKeys[0]
+		data.PrivateKey = encryptedKeys[1]
+		data.SymmetricKey = encryptedKeys[2]
 
 		isData := db.Find(&user, "email = ?", data.Email).RowsAffected
 		if isData == 0 {
