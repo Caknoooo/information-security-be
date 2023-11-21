@@ -65,9 +65,9 @@ type (
 		Role         string               `json:"role"`
 		Email        string               `json:"email"`
 		IsVerified   bool                 `json:"is_verified"`
-		PublicKey    string               `json:"public_key"`
-		PrivateKey   string               `json:"private_key"`
-		SymmetricKey string               `json:"symmetric_key"`
+		PublicKey    string               `json:"public_key,omitempty"`
+		PrivateKey   string               `json:"private_key,omitempty"`
+		SymmetricKey string               `json:"symmetric_key,omitempty"`
 		Work         string               `json:"work,omitempty"`
 		Files        []UploadFileResponse `json:"files,omitempty"`
 		CreatedAt    string               `json:"created_at,omitempty"`
