@@ -13,6 +13,7 @@ type UserRepository interface {
 	GetAllUser(ctx context.Context) ([]entities.User, error)
 	GetUserById(ctx context.Context, userId string) (entities.User, error)
 	GetUserByEmail(ctx context.Context, email string) (entities.User, error)
+	GetUserBySymmetricKey(ctx context.Context, tx *gorm.DB, key string) (entities.User, error)
 	CheckEmail(ctx context.Context, email string) (bool, error)
 	UpdateUser(ctx context.Context, user entities.User) (entities.User, error)
 	DeleteUser(ctx context.Context, userId string) (error) 
@@ -46,6 +47,18 @@ func (r *userRepository) GetAllUser(ctx context.Context) ([]entities.User, error
 func (r *userRepository) GetUserById(ctx context.Context, userId string) (entities.User, error){
 	var user entities.User
 	if err := r.db.Where("id = ?", userId).Take(&user).Error; err != nil {
+		return entities.User{}, err
+	}
+	return user, nil
+}
+
+func (r *userRepository) GetUserBySymmetricKey(ctx context.Context, tx *gorm.DB, key string) (entities.User, error) {
+	if tx == nil {
+		tx = r.db
+	}
+
+	var user entities.User
+	if err := tx.Where("symmetric_key = ?", key).Take(&user).Error; err != nil {
 		return entities.User{}, err
 	}
 	return user, nil
