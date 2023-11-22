@@ -256,7 +256,7 @@ func (s *privateAccessService) SendEncryptionKey(ctx context.Context, req dto.Se
 		return dto.SendEncryptionKeyResponse{}, err
 	}
 
-	fileUser, err := s.fileRepo.GetAllFileByUserId(ctx, nil, userSym.ID.String())
+	fileUser, err := s.fileRepo.GetLastSubmittedFilesByUserId(ctx, nil, userSym.ID.String(), []string{constants.ENUM_FILE_TYPE_IMAGE, constants.ENUM_FILE_TYPE_VIDEO, constants.ENUM_FILE_TYPE_DOCUMENT})
 	if err != nil {
 		return dto.SendEncryptionKeyResponse{}, err
 	}
