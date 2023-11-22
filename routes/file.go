@@ -12,6 +12,7 @@ func File(route *gin.Engine, fileController controller.FileController, jwtServic
 	{
 		routes.POST("", middleware.Authenticate(jwtService) ,fileController.UploadFile)
 		routes.GET("", middleware.Authenticate(jwtService) ,fileController.GetAllFileByUser)
+		routes.GET("/last", middleware.Authenticate(jwtService) ,fileController.GetLastSubmittedFilesByUserId)
 		routes.GET("/get", fileController.GetFile)
 	}
 }

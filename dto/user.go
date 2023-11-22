@@ -98,6 +98,11 @@ type (
 		IsVerified bool   `json:"is_verified,omitempty"`
 	}
 
+	UserGetAllResponse struct {
+		UserId 		string `json:"user_id"`
+		Name        string `json:"name"`
+	}
+
 	UserKeyResponse struct {
 		ID  string `json:"id"`
 		Key string `json:"key"`

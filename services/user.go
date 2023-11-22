@@ -27,6 +27,7 @@ type UserService interface {
 	VerifyEmail(ctx context.Context, req dto.VerifyEmailRequest) (dto.VerifyEmailResponse, error)
 	CheckUser(ctx context.Context, email string) (bool, error)
 	UpdateUser(ctx context.Context, req dto.UserUpdateRequest, userId string) (dto.UserUpdateResponse, error)
+	GetAllUsers(ctx context.Context, userId string)([]dto.UserGetAllResponse, error)
 	DeleteUser(ctx context.Context, userId string) error
 	Verify(ctx context.Context, email string, password string) (bool, error)
 	RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error)
@@ -54,7 +55,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 	if email {
 		return dto.UserResponse{}, dto.ErrEmailAlreadyExists
 	}
-	
+
 	encryptedName, _, err := utils.AESEncrypt(req.Name, utils.KEY)
 	if err != nil {
 		return dto.UserResponse{}, err
@@ -153,6 +154,28 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 	}
 
 	return draftEmail, nil
+}
+
+func (s *userService) GetAllUsers(ctx context.Context, userId string) ([]dto.UserGetAllResponse, error) {
+	users, err := s.userRepo.GetAllUser(ctx)
+	if err != nil {
+		return nil, dto.ErrGetAllUser
+	}
+
+	var userResponse []dto.UserGetAllResponse
+	for _, user := range users {
+		decryptedName, err := utils.AESDecrypt(user.Name, utils.KEY)
+		if err != nil {
+			return []dto.UserGetAllResponse{}, err
+		}
+
+		userResponse = append(userResponse, dto.UserGetAllResponse{
+			UserId: user.ID.String(),
+			Name:   decryptedName,
+		})
+	}
+
+	return userResponse, nil
 }
 
 func (s *userService) SendVerificationEmail(ctx context.Context, req dto.SendVerificationEmailRequest) error {

@@ -16,6 +16,7 @@ type (
 	FileController interface {
 		UploadFile(ctx *gin.Context)
 		GetAllFileByUser(ctx *gin.Context)
+		GetLastSubmittedFilesByUserId(ctx *gin.Context)
 		GetFile(ctx *gin.Context)
 	}
 
@@ -51,6 +52,20 @@ func (c *fileController) UploadFile(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPLOAD_FILE, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *fileController) GetLastSubmittedFilesByUserId(ctx *gin.Context) {
+	userId := ctx.MustGet("user_id").(string)
+
+	result, err := c.fileService.GetLastSubmittedFilesByUserId(ctx.Request.Context(), userId)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_LAST_SUBMITTED_FILES, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_LAST_SUBMITTED_FILES, result)
 	ctx.JSON(http.StatusOK, res)
 }
 

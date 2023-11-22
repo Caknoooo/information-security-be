@@ -19,6 +19,7 @@ func User(route *gin.Engine, userController controller.UserController, jwtServic
 		routes.PUT("/key", middleware.Authenticate(jwtService), userController.RegenerateKey)
 		routes.POST("/verify-email", userController.VerifyEmail)
 		routes.POST("/verification-email", userController.SendVerificationEmail)
+		routes.GET("/all", middleware.Authenticate(jwtService), userController.GetAllUsers)
 
 		// Admin
 		routes.GET("/admin", middleware.Authenticate(jwtService), userController.GetAllUser)
