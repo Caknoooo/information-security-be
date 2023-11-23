@@ -50,6 +50,13 @@ func (s *privateAccessService) Create(ctx context.Context, req dto.PrivateAccess
 		return dto.PrivateAccessResponse{}, dto.ErrGetUserById
 	}
 
+	privAccess, err := s.privateAccessRepo.GetPrivateAccessRequestByUserId(ctx, nil, req.UserReqId)
+	if len(privAccess) != 0 {
+		return dto.PrivateAccessResponse{}, dto.ErrPrivateAccessExists
+	} else if err != nil {
+		return dto.PrivateAccessResponse{}, dto.ErrGetPrivateAccessById
+	}
+
 	privateAccess := entities.PrivateAccess{
 		UserReqId:   userReq.ID.String(),
 		UserOwnerId: userOwn.ID.String(),

@@ -17,8 +17,10 @@ const (
 )
 
 var (
-	ErrCreatePrivateAccess = errors.New("failed to create private access")
-	ErrStatusNotFound      = errors.New("status not found")
+	ErrCreatePrivateAccess  = errors.New("failed to create private access")
+	ErrPrivateAccessExists  = errors.New("private access already exists")
+	ErrGetPrivateAccessById = errors.New("failed to get private access by id")
+	ErrStatusNotFound       = errors.New("status not found")
 )
 
 type (
