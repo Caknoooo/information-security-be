@@ -97,9 +97,6 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 		Role:         userReg.Role,
 		Email:        userReg.Email,
 		IsVerified:   userReg.IsVerified,
-		PublicKey:    userReg.PublicKey,
-		PrivateKey:   userReg.PrivateKey,
-		SymmetricKey: userReg.SymmetricKey,
 	}, nil
 }
 
@@ -418,11 +415,6 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		return dto.UserResponse{}, err
 	}
 
-	decryptedSymKey, err := utils.AESDecrypt(user.SymmetricKey, utils.KEY)
-	if err != nil {
-		return dto.UserResponse{}, err
-	}
-
 	return dto.UserResponse{
 		ID:           user.ID.String(),
 		Name:         decryptedName,
@@ -431,7 +423,7 @@ func (s *userService) GetUserById(ctx context.Context, userId string) (dto.UserR
 		Email:        user.Email,
 		PublicKey:    user.PublicKey,
 		PrivateKey:   user.PrivateKey,
-		SymmetricKey: decryptedSymKey,
+		SymmetricKey: user.SymmetricKey,
 		IsVerified:   user.IsVerified,
 	}, nil
 }

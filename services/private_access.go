@@ -5,6 +5,7 @@ import (
 	"context"
 	"html/template"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Caknoooo/golang-clean_template/constants"
@@ -249,7 +250,7 @@ func (s *privateAccessService) SendEncryptionKey(ctx context.Context, req dto.Se
 		return dto.SendEncryptionKeyResponse{}, err
 	}
 
-	decryptKey = decryptKey[:len(decryptKey)-len(time.Now().String())-1]
+	decryptKey = strings.Split(decryptKey, "_")[0]
 
 	userSym, err := s.userRepo.GetUserBySymmetricKey(ctx, nil, decryptKey)
 	if err != nil {
