@@ -7,20 +7,24 @@ const (
 	MESSAGE_FAILED_GET_ALL_PRIVATE_ACCESS_REQUEST = "failed get all private access request"
 	MESSAGE_FAILED_GET_ALL_PRIVATE_ACCESS_OWNER   = "failed get all private access owner"
 	MESSAGE_FAILED_UPDATE_PRIVATE_ACCESS          = "failed update private access"
+	MESSAGE_FAILED_DELETE_PRIVATE_ACCESS          = "failed delete private access"
 	MESSAGE_FAILED_SEND_ENCRYPTION_KEY            = "failed send encryption key"
 
 	MESSAGE_SUCCESS_CREATE_PRIVATE_ACCESS          = "success create private access"
 	MESSAGE_SUCCESS_GET_ALL_PRIVATE_ACCESS_REQUEST = "success get all private access request"
 	MESSAGE_SUCCESS_GET_ALL_PRIVATE_ACCESS_OWNER   = "success get all private access owner"
 	MESSAGE_SUCCESS_UPDATE_PRIVATE_ACCESS          = "success update private access"
+	MESSAGE_SUCCESS_DELETE_PRIVATE_ACCESS          = "success delete private access"
 	MESSAGE_SUCCESS_SEND_ENCRYPTION_KEY            = "success send encryption key"
 )
 
 var (
-	ErrCreatePrivateAccess  = errors.New("failed to create private access")
-	ErrPrivateAccessExists  = errors.New("private access already exists")
-	ErrGetPrivateAccessById = errors.New("failed to get private access by id")
-	ErrStatusNotFound       = errors.New("status not found")
+	ErrCreatePrivateAccess   = errors.New("failed to create private access")
+	ErrPrivateAccessExists   = errors.New("private access already exists")
+	ErrGetPrivateAccessById  = errors.New("failed to get private access by id")
+	ErrStatusNotFound        = errors.New("status not found")
+	ErrPrivateAccessNotFound = errors.New("private access not found")
+	ErrDeletePrivateAccess   = errors.New("failed to delete private access")
 )
 
 type (

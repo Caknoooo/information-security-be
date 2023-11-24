@@ -21,6 +21,7 @@ type (
 		GetAllPrivateAccessRequestByUserId(ctx context.Context, userId string) ([]dto.GetPrivateAccessResponse, error)
 		GetAllPrivateAccessOwnerByUserId(ctx context.Context, userId string) ([]dto.GetPrivateAccessResponse, error)
 		UpdatePrivateAccess(ctx context.Context, req dto.UpdatePrivateAccessRequest, userId string) (dto.UpdatePrivateAccessResponse, error)
+		DeletePrivateAccess(ctx context.Context, accessId string, userId string) error
 		SendEncryptionKey(ctx context.Context, req dto.SendEncryptionKeyRequest, userId string) (dto.SendEncryptionKeyResponse, error)
 	}
 
@@ -142,7 +143,7 @@ func (s *privateAccessService) UpdatePrivateAccess(ctx context.Context, req dto.
 		return dto.UpdatePrivateAccessResponse{}, dto.ErrUserNotFound
 	}
 
-	data, err := s.privateAccessRepo.GetPrivateAccessById(ctx, nil, req.ID, user.ID.String())
+	data, err := s.privateAccessRepo.GetPrivateAccessById(ctx, nil, req.ID)
 	if err != nil {
 		return dto.UpdatePrivateAccessResponse{}, err
 	}
@@ -205,6 +206,20 @@ func (s *privateAccessService) UpdatePrivateAccess(ctx context.Context, req dto.
 		ID:     result.ID.String(),
 		Status: result.Status,
 	}, nil
+}
+
+func (s *privateAccessService) DeletePrivateAccess(ctx context.Context, accessId string, userId string) error {
+	privAccess, err := s.privateAccessRepo.GetPrivateAccessById(ctx, nil, accessId)
+	if err != nil {
+		return dto.ErrPrivateAccessNotFound
+	}
+
+	err = s.privateAccessRepo.Delete(ctx, nil, privAccess.ID.String())
+	if err != nil {
+		return dto.ErrDeletePrivateAccess
+	}
+
+	return nil
 }
 
 func privateAccessVerificationEmail(info map[string]string) (map[string]string, error) {

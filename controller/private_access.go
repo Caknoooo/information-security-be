@@ -15,6 +15,7 @@ type (
 		GetAllPrivateAccessRequestByUserId(ctx *gin.Context)
 		GetAllPrivateAccessOwnerByUserId(ctx *gin.Context)
 		UpdatePrivateAccess(ctx *gin.Context)
+		DeletePrivateAccess(ctx *gin.Context)
 		SendEncryptionKey(ctx *gin.Context)
 	}
 
@@ -99,6 +100,21 @@ func (c *privateAccessController) UpdatePrivateAccess(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_UPDATE_PRIVATE_ACCESS, result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *privateAccessController) DeletePrivateAccess(ctx *gin.Context) {
+	userId := ctx.MustGet("user_id").(string)
+	id := ctx.Param("id")
+
+	err := c.privateAccessService.DeletePrivateAccess(ctx.Request.Context(), id, userId)
+	if err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_DELETE_PRIVATE_ACCESS, err.Error(), nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_DELETE_PRIVATE_ACCESS, nil)
 	ctx.JSON(http.StatusOK, res)
 }
 
