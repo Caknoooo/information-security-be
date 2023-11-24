@@ -13,6 +13,7 @@ type (
 		Create(ctx context.Context, tx *gorm.DB, data entities.PrivateAccess) (entities.PrivateAccess, error)
 		GetPrivateAccessRequestByUserId(ctx context.Context, tx *gorm.DB, userId string) ([]entities.PrivateAccess, error)
 		GetPrivateAccessOwnerByUserId(ctx context.Context, tx *gorm.DB, userId string) ([]entities.PrivateAccess, error)
+		GetPrivateAccessRequestByUserAndOwner(ctx context.Context, tx *gorm.DB, userId string, ownerId string) ([]entities.PrivateAccess, error)
 		GetPrivateAccessById(ctx context.Context, tx *gorm.DB, id string, userId string) (entities.PrivateAccess, error)
 		Update(ctx context.Context, tx *gorm.DB, data entities.PrivateAccess) (entities.PrivateAccess, error)
 	}
@@ -73,6 +74,19 @@ func (r *privateAccessRepository) GetPrivateAccessOwnerByUserId(ctx context.Cont
 
 	var result []entities.PrivateAccess
 	if err := tx.Where("user_owner_id = ? AND status = ?", userId, constants.ENUM_STATUS_PENDING).Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *privateAccessRepository) GetPrivateAccessRequestByUserAndOwner(ctx context.Context, tx *gorm.DB, userId string, ownerId string) ([]entities.PrivateAccess, error) {
+	if tx == nil {
+		tx = r.db
+	}
+
+	var result []entities.PrivateAccess
+	if err := tx.Where("user_req_id = ? AND user_owner_id = ?", userId, ownerId).Find(&result).Error; err != nil {
 		return nil, err
 	}
 
