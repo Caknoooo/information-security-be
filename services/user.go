@@ -27,15 +27,17 @@ type UserService interface {
 	VerifyEmail(ctx context.Context, req dto.VerifyEmailRequest) (dto.VerifyEmailResponse, error)
 	CheckUser(ctx context.Context, email string) (bool, error)
 	UpdateUser(ctx context.Context, req dto.UserUpdateRequest, userId string) (dto.UserUpdateResponse, error)
-	GetAllUsers(ctx context.Context, userId string)([]dto.UserGetAllResponse, error)
+	GetAllUsers(ctx context.Context, userId string) ([]dto.UserGetAllResponse, error)
 	DeleteUser(ctx context.Context, userId string) error
 	Verify(ctx context.Context, email string, password string) (bool, error)
 	RegenerateKey(ctx context.Context, userId string) (dto.UserKeyResponse, error)
 }
 
 const (
-	LOCAL_URL          = "http://localhost:3000"
-	VERIFY_EMAIL_ROUTE = "register/verify_email"
+	LOCAL_URL              = "http://localhost:3000"
+	VERIFY_EMAIL_ROUTE     = "register/verify_email"
+	DEV_URL                = "https://information-security-fe.vercel.app"
+	VERIFY_EMAIL_ROUTE_DEV = "register/activate"
 )
 
 type userService struct {
@@ -91,12 +93,12 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 	}
 
 	return dto.UserResponse{
-		ID:           userReg.ID.String(),
-		Name:         userReg.Name,
-		TelpNumber:   userReg.TelpNumber,
-		Role:         userReg.Role,
-		Email:        userReg.Email,
-		IsVerified:   userReg.IsVerified,
+		ID:         userReg.ID.String(),
+		Name:       userReg.Name,
+		TelpNumber: userReg.TelpNumber,
+		Role:       userReg.Role,
+		Email:      userReg.Email,
+		IsVerified: userReg.IsVerified,
 	}, nil
 }
 
@@ -108,7 +110,7 @@ func makeVerificationEmail(receiverEmail string) (map[string]string, error) {
 		return nil, err
 	}
 
-	verifyLink := LOCAL_URL + "/" + VERIFY_EMAIL_ROUTE + "?token=" + token
+	verifyLink := DEV_URL + "/" + VERIFY_EMAIL_ROUTE_DEV + "?token=" + token
 
 	readHtml, err := os.ReadFile("utils/email-template/base_mail.html")
 	if err != nil {
