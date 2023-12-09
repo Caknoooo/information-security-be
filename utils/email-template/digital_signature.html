@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Signature Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(226, 55, 55, 0.1);
+            border-radius: 5px;
+        }
+
+        h1 {
+            color: #1c1c1c;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .encryption-info {
+            background-color: #f2f2f2;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .signature {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Digital Signature Access</h1>
+        <p>Hello, {{ .Email }}</p>
+        <p>We are thrilled to inform you that you have been granted exclusive access to our secured digital signature. This signifies a significant step towards enhanced privacy and protection of your personal data. Your unique encryption details, highlighted below, ensure that your information remains confidential and secure throughout the access process.</p>
+        
+        <p>{{ .BodyContent }}</p>
+
+        <div class="encryption-info">
+            <h2>Encryption Details</h2>
+            <p>{{ .Filepath }}</p>
+        </div>
+
+        <div class="signature">
+            <p>Best Regards,<br>{{ .NameOwner }}</p>
+        </div>
+    </div>
+</body>
+
+</html>

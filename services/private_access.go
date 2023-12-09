@@ -192,7 +192,7 @@ func (s *privateAccessService) UpdatePrivateAccess(ctx context.Context, req dto.
 			return dto.UpdatePrivateAccessResponse{}, err
 		}
 
-		if err := utils.SendMail(userReq.Email, draftEmail["subject"], draftEmail["body"]); err != nil {
+		if err := utils.SendMail(userReq.Email, draftEmail["subject"], draftEmail["body"], ""); err != nil {
 			return dto.UpdatePrivateAccessResponse{}, err
 		}
 	}
