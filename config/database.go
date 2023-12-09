@@ -40,9 +40,10 @@ func SetUpDatabaseConnection() *gorm.DB{
 	}
 
 	if err := db.AutoMigrate(
-		entities.User{},
-		entities.File{},
-		entities.PrivateAccess{},
+		&entities.User{},
+		&entities.File{},
+		&entities.PrivateAccess{},
+		&entities.DigitalSignature{},	
 	); err != nil{
 		fmt.Println(err)
 		panic(err)
