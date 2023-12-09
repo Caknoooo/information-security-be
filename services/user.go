@@ -87,7 +87,7 @@ func (s *userService) RegisterUser(ctx context.Context, req dto.UserCreateReques
 		return dto.UserResponse{}, err
 	}
 
-	err = utils.SendMail(req.Email, draftEmail["subject"], draftEmail["body"])
+	err = utils.SendMail(req.Email, draftEmail["subject"], draftEmail["body"], "")
 	if err != nil {
 		return dto.UserResponse{}, err
 	}
@@ -183,7 +183,7 @@ func (s *userService) SendVerificationEmail(ctx context.Context, req dto.SendVer
 		return err
 	}
 
-	err = utils.SendMail(req.Email, draftEmail["subject"], draftEmail["body"])
+	err = utils.SendMail(req.Email, draftEmail["subject"], draftEmail["body"], "")
 	if err != nil {
 		return err
 	}

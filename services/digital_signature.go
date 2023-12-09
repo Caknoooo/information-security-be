@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"time"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
@@ -41,6 +42,7 @@ const (
 	DataCommentKey      = "DataKeyF-02_"
 	SignatureCommentKey = "SignatureKeyF-02_"
 	PublicKeyCommentKey = "PublicKeyKeyF-02_"
+	API_URL             = "www.isf.sre-its.com/static"
 )
 
 type (
@@ -116,6 +118,28 @@ func (s *digitalSignatureService) CreateDigitalSignature(ctx context.Context, re
 		return dto.DigitalSignatureResponse{}, err
 	}
 
+	decryptName, err := utils.AESDecrypt(from.Name, utils.KEY)
+	if err != nil {
+		return dto.DigitalSignatureResponse{}, err
+	}
+
+	data := map[string]string {
+		"email": to.Email,
+		"subject": req.Subject,
+		"body_content": req.BodyContent,
+		"filepath": API_URL + "/" + filename,
+		"name_owner": decryptName,
+	}
+
+	draftEmail, err := SendDigitalSignatureMail(data)
+	if err != nil {
+		return dto.DigitalSignatureResponse{}, err
+	}
+
+	if err := utils.SendMail(to.Email, draftEmail["subject"], draftEmail["body"], fullPath); err != nil {
+		return dto.DigitalSignatureResponse{}, err
+	}
+
 	return dto.DigitalSignatureResponse{
 		ID:         digitalSignature.ID.String(),
 		SenderID:   digitalSignature.SenderID,
@@ -125,6 +149,44 @@ func (s *digitalSignatureService) CreateDigitalSignature(ctx context.Context, re
 		Filepath:   digitalSignature.Filepath,
 		IsSigned:   digitalSignature.IsSigned,
 	}, nil
+}
+
+func SendDigitalSignatureMail(info map[string]string) (map[string]string, error) {
+	readHtml, err := utils.Read("utils/email-template/digital_signature.html")
+	if err != nil {
+		return nil, err
+	}
+
+	data := struct {
+		Email       string
+		Subject     string
+		BodyContent string
+		Filepath    string
+		NameOwner   string
+	}{
+		Email:       info["email"],
+		Subject:     info["subject"],
+		BodyContent: info["body_content"],
+		Filepath:    info["filepath"],
+		NameOwner:   info["name_owner"],
+	}
+
+	tmpl, err := template.New("custom").Parse(string(readHtml))
+	if err != nil {
+		return nil, err
+	}
+
+	var strMail bytes.Buffer
+	if err := tmpl.Execute(&strMail, data); err != nil {
+		return nil, err
+	}
+
+	draftEmail := map[string]string{
+		"subject": "Digital Signature",
+		"body":    strMail.String(),
+	}
+
+	return draftEmail, nil
 }
 
 func WriteContent(content []byte, from entities.User) ([]byte, error) {

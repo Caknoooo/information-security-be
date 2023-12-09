@@ -6,7 +6,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-func SendMail(toEmail string, subject string, body string) error {
+func SendMail(toEmail string, subject string, body string, urlPdf string) error {
 	emailConfig, err := config.NewEmailConfig()
 	if err != nil {
 		return err
@@ -17,6 +17,10 @@ func SendMail(toEmail string, subject string, body string) error {
 	mailer.SetHeader("To", toEmail)
 	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", body)
+
+	if urlPdf != "" {
+		mailer.Attach(urlPdf)
+	}
 
 	dialer := gomail.NewDialer(
 		emailConfig.Host,
