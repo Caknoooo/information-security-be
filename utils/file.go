@@ -65,3 +65,28 @@ func UploadFileSuccess(file *multipart.FileHeader, path string) error {
 
 	return nil
 }
+
+func Write(path string, data []byte) error {
+	err := os.WriteFile(path, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Read(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil{
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func GetExtension(filename string) string {
+	parts := strings.Split(filename, ".")
+	extension := parts[len(parts)-1]
+
+	return extension
+}
