@@ -69,15 +69,26 @@ func (c *digitalSignatureController) VerifyDigitalSignature(ctx *gin.Context) {
 }
 
 func (c *digitalSignatureController) GetAllNotifications(ctx *gin.Context) {
-	userId := ctx.MustGet("user_id").(string)
+	var req dto.PaginationRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_DATA_FROM_BODY, err.Error(), nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
 
-	res, err := c.digitalSignatureService.GetAllNotifications(ctx, userId)
+	userId := ctx.MustGet("user_id").(string)
+	res, err := c.digitalSignatureService.GetAllNotifications(ctx, userId, req)
 	if err != nil {
 		res := utils.BuildResponseFailed(dto.MESSAGE_FAILED_GET_ALL_NOTIFICATIONS, err.Error(), nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	response := utils.BuildResponseSuccess(dto.MESSAGE_SUCCESS_GET_ALL_NOTIFICATIONS, res)
+	response := utils.Response {
+		Status: true,
+		Message: dto.MESSAGE_SUCCESS_GET_ALL_NOTIFICATIONS,
+		Data: res.Notifications,
+		Meta: res.PaginationResponse,
+	}
 	ctx.JSON(http.StatusOK, response)
 }
