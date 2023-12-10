@@ -3,6 +3,8 @@ package dto
 import (
 	"errors"
 	"mime/multipart"
+
+	"github.com/Caknoooo/golang-clean_template/entities"
 )
 
 var (
@@ -50,6 +52,16 @@ type (
 		Subject     string `json:"subject"`
 		BodyContent string `json:"body_content"`
 		Filepath    string `json:"filepath"`
+	}
+
+	GetAllNotificationsWithPaginationResponse struct {
+		Notifications []GetAllNotificationsResponse `json:"notifications"`
+		PaginationResponse
+	}
+
+	GetAllNotificationsRepository struct {
+		DigitalSignature []entities.DigitalSignature
+		PaginationResponse
 	}
 
 	VerifyDigitalSignatureRequest struct {

@@ -22,7 +22,7 @@ type (
 	DigitalSignatureService interface {
 		CreateDigitalSignature(ctx context.Context, req dto.DigitalSignatureRequest) (dto.DigitalSignatureResponse, error)
 		VerifyDigitalSignature(ctx context.Context, req dto.VerifyDigitalSignatureRequest) (dto.VerifyDigitalSignatureResponse, error)
-		GetAllNotifications(ctx context.Context, userId string) ([]dto.GetAllNotificationsResponse, error)
+		GetAllNotifications(ctx context.Context, userId string, req dto.PaginationRequest) (dto.GetAllNotificationsWithPaginationResponse, error)
 	}
 
 	digitalSignatureService struct {
@@ -123,12 +123,12 @@ func (s *digitalSignatureService) CreateDigitalSignature(ctx context.Context, re
 		return dto.DigitalSignatureResponse{}, err
 	}
 
-	data := map[string]string {
-		"email": to.Email,
-		"subject": req.Subject,
+	data := map[string]string{
+		"email":        to.Email,
+		"subject":      req.Subject,
 		"body_content": req.BodyContent,
-		"filepath": API_URL + "/" + filename,
-		"name_owner": decryptName,
+		"filepath":     API_URL + "/" + filename,
+		"name_owner":   decryptName,
 	}
 
 	draftEmail, err := SendDigitalSignatureMail(data)
@@ -296,7 +296,7 @@ func (s *digitalSignatureService) VerifyDigitalSignature(ctx context.Context, re
 	}
 
 	return dto.VerifyDigitalSignatureResponse{
-		IsVerified:           true,
+		IsVerified: true,
 		SenderVerifyResponse: dto.SenderVerifyResponse{
 			Name:  data.Name,
 			Email: data.Email,
@@ -351,22 +351,22 @@ func ReadContent(content []byte) (ReadContents, error) {
 	}, nil
 }
 
-func (s *digitalSignatureService) GetAllNotifications(ctx context.Context, userId string) ([]dto.GetAllNotificationsResponse, error) {
-	digitalSignatures, err := s.digitalSignatureRepo.GetAllDigitalSignatureReceiver(ctx, nil, userId)
+func (s *digitalSignatureService) GetAllNotifications(ctx context.Context, userId string, req dto.PaginationRequest) (dto.GetAllNotificationsWithPaginationResponse, error) {
+	digitalSignatures, err := s.digitalSignatureRepo.GetAllDigitalSignatureReceiver(ctx, nil, userId, req)
 	if err != nil {
-		return nil, err
+		return dto.GetAllNotificationsWithPaginationResponse{}, err
 	}
 
 	var notifications []dto.GetAllNotificationsResponse
-	for _, digitalSignature := range digitalSignatures {
+	for _, digitalSignature := range digitalSignatures.DigitalSignature {
 		user, err := s.userRepo.GetUserById(ctx, digitalSignature.SenderID)
 		if err != nil {
-			return nil, err
-		}		
+			return dto.GetAllNotificationsWithPaginationResponse{}, err
+		}
 
 		decryptName, err := utils.AESDecrypt(user.Name, utils.KEY)
 		if err != nil {
-			return nil, err
+			return dto.GetAllNotificationsWithPaginationResponse{}, err
 		}
 
 		notification := dto.GetAllNotificationsResponse{
@@ -380,5 +380,8 @@ func (s *digitalSignatureService) GetAllNotifications(ctx context.Context, userI
 		notifications = append(notifications, notification)
 	}
 
-	return notifications, nil
+	return dto.GetAllNotificationsWithPaginationResponse{
+		Notifications:      notifications,
+		PaginationResponse: digitalSignatures.PaginationResponse,
+	}, nil
 }
