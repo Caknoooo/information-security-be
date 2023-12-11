@@ -171,6 +171,7 @@ func (s *userService) GetAllUsers(ctx context.Context, userId string) ([]dto.Use
 		userResponse = append(userResponse, dto.UserGetAllResponse{
 			UserId: user.ID.String(),
 			Name:   decryptedName,
+			Email:  user.Email,
 		})
 	}
 
