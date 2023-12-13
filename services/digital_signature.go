@@ -39,9 +39,9 @@ func NewDigitalSignatureService(digitalSignatureRepo repository.DigitalSignature
 }
 
 const (
-	DataCommentKey      = "DataKeyF-02_"
-	SignatureCommentKey = "SignatureKeyF-02_"
-	PublicKeyCommentKey = "PublicKeyKeyF-02_"
+	DataCommentKey      = "DataKeyF-05_"
+	SignatureCommentKey = "SignatureKeyF-05_"
+	PublicKeyCommentKey = "PublicKeyKeyF-05_"
 	API_URL             = "www.isf.sre-its.com/static"
 )
 
